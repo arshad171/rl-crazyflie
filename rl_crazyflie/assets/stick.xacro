@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot name="stick" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="cylinderLength" value="0.3" />
+    <xacro:property name="cylinderRadius" value="0.005" />
+    <link name="base_link">
+        <visual>
+            <!-- with respect to the center of the cylinder -->
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <cylinder length="${cylinderLength}" radius="${cylinderRadius}" />
+            </geometry>
+            <material name="red">
+                <color rgba="0.8 0 0 1" />
+            </material>
+        </visual>
+
+        <!-- similar to visual, can be different for safer zones/computation -->
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <cylinder length="${cylinderLength}" radius="${cylinderRadius}" />
+            </geometry>
+        </collision>
+
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            
+            <!-- in kgs -->
+            <mass value="0.0027"/>
+
+            <!-- calc from script -->
+            <inertia ixx="2.0e-5" ixy="0.0" ixz="0.0" iyy="2.0e-5" iyz="0.0" izz="3.3e-8"/>
+
+        </inertial>
+
+    </link>
+</robot>
