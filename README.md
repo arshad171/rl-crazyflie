@@ -8,3 +8,8 @@
 ## URDF
 
 Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to `gym-pybullet-drones/gym_pybullet_drones/assets/` so gym can access it.
+
+## pybullet
+
+- `id = p.loadURDF("path")` returns the id of the object (needed for interaction).
+- `pos, quat = p.getBasePositionAndOrientation(self.STICK_ID, physicsClientId=self.CLIENT)` returns the position and orientation of the base/root link. The `id` param is the id returned when loading the URDF.
