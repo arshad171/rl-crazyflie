@@ -12,4 +12,5 @@ Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to
 ## pybullet
 
 - `id = p.loadURDF("path")` returns the id of the object (needed for interaction).
-- `pos, quat = p.getBasePositionAndOrientation(self.STICK_ID, physicsClientId=self.CLIENT)` returns the position and orientation of the base/root link. The `id` param is the id returned when loading the URDF.
+- `pos, quat = p.getBasePositionAndOrientation(id, physicsClientId=client)` returns the position and orientation of the base/root link. The `id` param is the id returned when loading the URDF.
+- `rpy = p.getEulerFromQuaternion(quat)` converts quat to rpy.
