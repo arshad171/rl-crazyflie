@@ -3,7 +3,7 @@
     <xacro:property name="cylinderLength" value="0.3" />
     <xacro:property name="cylinderRadius" value="0.005" />
     <xacro:property name="cylinderMass" value="0.0027" />
-    <link name="base_link">
+    <link name="base">
         <visual>
             <!-- with respect to the center of the cylinder -->
             <origin rpy="0 0 0" xyz="0 0 ${cylinderLength/2}"/>
@@ -68,8 +68,8 @@
     </link>
 
     <joint name="joint1" type="fixed">
-        <parent link="base_link"/>
-        <child link="top"/>
+        <parent link="top"/>
+        <child link="base"/>
         <!-- with respect the parent reference -->
         <origin rpy="0 0 0" xyz="0 0 0" />
     </joint>

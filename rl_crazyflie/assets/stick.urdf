@@ -4,7 +4,7 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="stick" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <link name="base_link">
+  <link name="base">
     <visual>
       <!-- with respect to the center of the cylinder -->
       <origin rpy="0 0 0" xyz="0 0 0.15"/>
@@ -56,8 +56,8 @@
     </inertial>
   </link>
   <joint name="joint1" type="fixed">
-    <parent link="base_link"/>
-    <child link="top"/>
+    <parent link="top"/>
+    <child link="base"/>
     <!-- with respect the parent reference -->
     <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
