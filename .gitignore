@@ -1,2 +1,4 @@
+__pycache__
+*.code-workspace
 ./gym-pybullet-drones
 ./pybullet*
