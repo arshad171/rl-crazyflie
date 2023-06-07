@@ -20,7 +20,7 @@ class BalanceAviary(BaseSingleAgentAviary):
                  gui=False,
                  record=False, 
                  obs: ObservationType=ObservationType.KIN_BAL,
-                 act: ActionType=ActionType.PID_BAL,
+                 act: ActionType=ActionType.PID,
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
                  ):
@@ -52,10 +52,6 @@ class BalanceAviary(BaseSingleAgentAviary):
             The type of action space (1 or 3D; RPMS, thurst and torques, or waypoint with PID control)
 
         """
-        # for recording
-        self.STICK_HEIGHT = 0.3
-        self.EPISODE_LEN_SEC = 2
-
         self.rec_counter = 0
         super().__init__(drone_model=drone_model,
                          initial_xyzs=initial_xyzs,
@@ -68,9 +64,8 @@ class BalanceAviary(BaseSingleAgentAviary):
                          obs=obs,
                          act=act
                          )
-        if self.ACT_TYPE != ActionType.PID_BAL:
-            print("[ERROR] in NavigationAviary.__init__(), ACT_TYPE must be ActionType.PID_BAL" )
-            exit()
+        self.STICK_HEIGHT = 1.0
+        self.EPISODE_LEN_SEC = 1
 
         self.ext_dist_mag = ext_dist_mag
         self.ext_dist_index = 0
@@ -85,12 +80,26 @@ class BalanceAviary(BaseSingleAgentAviary):
             The reward.
 
         """
+        # obs = self._computeObs()
+        # drone_state = obs[:12]
+        # stick_state = obs[12:]
+
         drone_state = self._getDroneStateVector(0)
         stick_state = self._getStickStateVector()
 
-        # return -1 * np.linalg.norm(self.TARGET_POSITION - drone_state[0:3])**2
-    
-        return -1 * (np.linalg.norm(drone_state[:2] - stick_state[:2]) ** 2 + np.linalg.norm((stick_state[2] - drone_state[2]) - self.STICK_HEIGHT) ** 2)
+
+        r = -1 * (np.linalg.norm(drone_state[:2] - stick_state[:2]) ** 2 + np.linalg.norm((stick_state[2] - drone_state[2]) - self.STICK_HEIGHT) ** 2)
+        # r =  -1 * (np.linalg.norm((stick_state[2] - drone_state[2]) - self.STICK_HEIGHT) ** 2)
+        # r = -1 * (np.linalg.norm((stick_state[2] - drone_state[2]) - self.STICK_HEIGHT) ** 2) + -0.1 * np.linalg.norm(drone_state[:3])
+
+        # r = np.clip(r, -2, 0.1)
+
+        # print("*"*10)
+        # print(f"{drone_state[:3]}")
+        # print(f"{stick_state[:3]}")
+        # print(f"{r=}")
+
+        return r
 
     ################################################################################
     
@@ -103,7 +112,14 @@ class BalanceAviary(BaseSingleAgentAviary):
             Whether the current episode is done.
 
         """
-        if self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC:
+        drone_state = self._getDroneStateVector(0)
+        stick_state = self._getStickStateVector()
+
+        # stop if the stick falls below the drone
+        # if (self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC) or (drone_state[2] >= stick_state[2]):
+
+        # stop if roll/pitch of the stick is too much
+        if (self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC) or np.abs(stick_state[3]) > 15 * np.pi / 180 or np.abs(stick_state[4]) > 15 * np.pi / 180:
             return True
         else:
             return False
@@ -196,6 +212,29 @@ class BalanceAviary(BaseSingleAgentAviary):
 
         return clipped
     
+
+    def _clipAndNormalizeStickState(self, state):
+        MAX_LIN_VEL_XY = 3 
+        MAX_LIN_VEL_Z = 1
+
+        MAX_XY = MAX_LIN_VEL_XY*self.EPISODE_LEN_SEC
+        # MAX_Z = MAX_LIN_VEL_Z*self.EPISODE_LEN_SEC
+        MAX_Z = 3
+
+        MAX_PITCH_ROLL = np.pi # Full range
+
+        clipped_pos_xy = np.clip(state[0:2], -MAX_XY, MAX_XY)
+        clipped_pos_z = np.clip(state[2], 0, MAX_Z)
+        clipped_rp = np.clip(state[3:5], -MAX_PITCH_ROLL, MAX_PITCH_ROLL)
+        clipped_y = state[5]
+
+        clipped = np.hstack([clipped_pos_xy, clipped_pos_z, clipped_rp, clipped_y])
+
+        if self.GUI and any(clipped != state):
+            print(f"[stick clipped]: {state=} | {clipped=}")
+
+        return clipped
+
     ################################################################################
     
     def _clipAndNormalizeStateWarning(self,

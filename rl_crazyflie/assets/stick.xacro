@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
 <robot name="stick" xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:property name="cylinderLength" value="0.3" />
-    <xacro:property name="cylinderRadius" value="0.005" />
-    <xacro:property name="cylinderMass" value="0.0027" />
+    <xacro:property name="cylinderLength" value="1.0" />
+    <xacro:property name="cylinderRadius" value="0.01" />
+    <xacro:property name="cylinderMass" value="0.001" />
+    <xacro:property name="cylinderIxx" value="${1/12 * cylinderMass * (3 * cylinderRadius**2 + cylinderLength**2)}" />
+    <xacro:property name="cylinderIyy" value="${1/12 * cylinderMass * (3 * cylinderRadius**2 + cylinderLength**2)}" />
+    <xacro:property name="cylinderIzz" value="${1/2 * cylinderMass * cylinderRadius**2}" />
     <link name="base">
         <visual>
             <!-- with respect to the center of the cylinder -->
@@ -30,13 +33,16 @@
             <mass value="${cylinderMass}"/>
 
             <!-- calc from script -->
-            <inertia ixx="2.0e-5" ixy="0.0" ixz="0.0" iyy="2.0e-5" iyz="0.0" izz="3.3e-8"/>
+            <inertia ixx="${cylinderIxx}" ixy="0.0" ixz="0.0" iyy="${cylinderIyy}" iyz="0.0" izz="${cylinderIzz}"/>
         </inertial>
 
     </link>
 
     <xacro:property name="sphereRadius" value="0.02" />
-    <xacro:property name="sphereMass" value="0.0027" />
+    <xacro:property name="sphereMass" value="0.003" />
+    <xacro:property name="sphereIxx" value="${2/3 * sphereMass * sphereRadius**2}" />
+    <xacro:property name="sphereIyy" value="${2/3 * sphereMass * sphereRadius**2}" />
+    <xacro:property name="sphereIzz" value="${2/3 * sphereMass * sphereRadius**2}" />
     <link name="top">
         <visual>
             <!-- shift origin to the top -->
@@ -63,7 +69,7 @@
             <mass value="${sphereMass}"/>
 
             <!-- calc from script -->
-            <inertia ixx="7.2e-7" ixy="0.0" ixz="0.0" iyy="7.2e-7" iyz="0.0" izz="7.2e-7"/>
+            <inertia ixx="${sphereIxx}" ixy="0.0" ixz="0.0" iyy="${sphereIyy}" iyz="0.0" izz="${sphereIzz}"/>
         </inertial>
     </link>
 
