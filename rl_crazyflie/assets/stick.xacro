@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <robot name="stick" xmlns:xacro="http://www.ros.org/wiki/xacro">
     <xacro:property name="cylinderLength" value="1.0" />
-    <xacro:property name="cylinderRadius" value="0.01" />
-    <xacro:property name="cylinderMass" value="0.001" />
+    <xacro:property name="cylinderRadius" value="0.005" />
+    <xacro:property name="cylinderMass" value="0.002" />
     <xacro:property name="cylinderIxx" value="${1/12 * cylinderMass * (3 * cylinderRadius**2 + cylinderLength**2)}" />
     <xacro:property name="cylinderIyy" value="${1/12 * cylinderMass * (3 * cylinderRadius**2 + cylinderLength**2)}" />
     <xacro:property name="cylinderIzz" value="${1/2 * cylinderMass * cylinderRadius**2}" />
@@ -38,8 +38,8 @@
 
     </link>
 
-    <xacro:property name="sphereRadius" value="0.02" />
-    <xacro:property name="sphereMass" value="0.003" />
+    <xacro:property name="sphereRadius" value="0.03" />
+    <xacro:property name="sphereMass" value="0.006" />
     <xacro:property name="sphereIxx" value="${2/3 * sphereMass * sphereRadius**2}" />
     <xacro:property name="sphereIyy" value="${2/3 * sphereMass * sphereRadius**2}" />
     <xacro:property name="sphereIzz" value="${2/3 * sphereMass * sphereRadius**2}" />

@@ -2,7 +2,7 @@
 
 ### cylinder
 HEIGHT = 0.005
-RADIUS = 0.025
+RADIUS = 0.05
 # in kgs
 MASS = 0.005
 
@@ -16,17 +16,17 @@ print(f"{ixx=}")
 print(f"{iyy=}")
 print(f"{izz=}")
 
-### shere
-RADIUS = 0.02
-# in kgs
-MASS = 0.010
+# ### shere
+# RADIUS = 0.02
+# # in kgs
+# MASS = 0.010
 
-ixx = 2 / 3 * MASS * RADIUS**2
-iyy = 2 / 3 * MASS * RADIUS**2
-izz = 2 / 3 * MASS * RADIUS**2
+# ixx = 2 / 3 * MASS * RADIUS**2
+# iyy = 2 / 3 * MASS * RADIUS**2
+# izz = 2 / 3 * MASS * RADIUS**2
 
-print("sphere")
+# print("sphere")
 
-print(f"{ixx=}")
-print(f"{iyy=}")
-print(f"{izz=}")
+# print(f"{ixx=}")
+# print(f"{iyy=}")
+# print(f"{izz=}")
