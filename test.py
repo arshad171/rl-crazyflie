@@ -8,19 +8,19 @@ from gym_pybullet_drones.utils.utils import sync
 import torch as th
 
 from stable_baselines3.common.logger import configure
-from stable_baselines3 import A2C
+from stable_baselines3 import PPO
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.noise import NormalActionNoise
 
 from rl_crazyflie.envs.BalanceAviary import BalanceAviary
 from rl_crazyflie.utils.Logger import Logger
 
-# MODE = "train"
-MODE = "test"
+MODE = "train"
+# MODE = "test"
 
 # define defaults
-# DEFAULT_GUI = False
-DEFAULT_GUI = True
+DEFAULT_GUI = False
+# DEFAULT_GUI = True
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OUTPUT_FOLDER = "./results"
 MODEL_PATH = "./results/model"
@@ -73,11 +73,11 @@ def main():
         sigma = 0.01 * np.ones(n_actions)
 
         new_logger = configure(LOGS_PATH, ["stdout", "csv", "tensorboard"])
-        model = A2C(
+        model = PPO(
             "MlpPolicy",
             balance_env,
             # policy_kwargs=dict(net_arch=dict(pi=ACTOR_NET_ARCH, qf=CRITIC_NET_ARCH)),
-            # policy_kwargs=dict(net_arch=dict(pi=ACTOR_NET_ARCH, vf=CRITIC_NET_ARCH)),
+            # policy_kwargs=dict(net_arch=[50, dict(pi=ACTOR_NET_ARCH, vf=CRITIC_NET_ARCH)]),
             verbose=0,
             # action_noise=NormalActionNoise(mu, sigma),
             tensorboard_log=TB_LOGS_PATH,
@@ -94,7 +94,7 @@ def main():
         # resume training
         if os.path.exists(ENV_PATH) and os.path.exists(MODEL_PATH + ".zip"):
             balance_env = pickle.load(open(ENV_PATH, "rb"))
-            model = A2C.load(MODEL_PATH, balance_env)
+            model = PPO.load(MODEL_PATH, balance_env)
 
 
         model.set_logger(new_logger)
@@ -110,7 +110,7 @@ def main():
 
     elif MODE == "test":
         # balance_env = pickle.load(open(ENV_PATH, "rb"))
-        model = A2C.load(MODEL_PATH, balance_env)
+        model = PPO.load(MODEL_PATH, balance_env)
         # balance_env = model.get_env()
 
         logger = Logger(

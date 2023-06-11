@@ -20,7 +20,7 @@ class BalanceAviary(BaseSingleAgentAviary):
                  gui=False,
                  record=False, 
                  obs: ObservationType=ObservationType.KIN_BAL,
-                 act: ActionType=ActionType.PID_BAL,
+                 act: ActionType=ActionType.PID,
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
                  ):
