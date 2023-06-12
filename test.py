@@ -15,12 +15,12 @@ from stable_baselines3.common.noise import NormalActionNoise
 from rl_crazyflie.envs.BalanceAviary import BalanceAviary
 from rl_crazyflie.utils.Logger import Logger
 
-MODE = "train"
-# MODE = "test"
+# MODE = "train"
+MODE = "test"
 
 # define defaults
-DEFAULT_GUI = False
-# DEFAULT_GUI = True
+# DEFAULT_GUI = False
+DEFAULT_GUI = True
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OUTPUT_FOLDER = "./results"
 MODEL_PATH = "./results/model"
@@ -78,18 +78,20 @@ def main():
             balance_env,
             # policy_kwargs=dict(net_arch=dict(pi=ACTOR_NET_ARCH, qf=CRITIC_NET_ARCH)),
             # policy_kwargs=dict(net_arch=[50, dict(pi=ACTOR_NET_ARCH, vf=CRITIC_NET_ARCH)]),
+            # use_sde=True,
             verbose=0,
             # action_noise=NormalActionNoise(mu, sigma),
             tensorboard_log=TB_LOGS_PATH,
         )
 
-        # test
+        # # test
         # # while True:
+        # for _ in range(10):
         #     obs, rew, done, info = balance_env.step(np.array([0.0, 0.0, 1.0]))
         #     # print("-"*10)
         #     # print(obs)
         #     # print("-"*10)
-        #     # exit(0)
+        # exit(0)
 
         # resume training
         if os.path.exists(ENV_PATH) and os.path.exists(MODEL_PATH + ".zip"):
