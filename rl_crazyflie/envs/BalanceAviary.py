@@ -14,7 +14,7 @@ class BalanceAviary(BaseSingleAgentAviary):
                  drone_model: DroneModel=DroneModel.CF2X,
                  initial_xyzs=None,
                  initial_rpys=None,
-                 physics: Physics=Physics.PYB_PID,
+                 physics: Physics=Physics.PYB_PID_OL,
                  freq: int=240,
                  aggregate_phy_steps: int=1,
                  gui=False,
