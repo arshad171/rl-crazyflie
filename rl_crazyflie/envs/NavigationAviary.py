@@ -2,10 +2,8 @@ import numpy as np
 
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
 from gym_pybullet_drones.envs.single_agent_rl.BaseSingleAgentAviary import ActionType, ObservationType, BaseSingleAgentAviary
-import pkg_resources
-import pybullet as p
 
-class BalanceAviary(BaseSingleAgentAviary):
+class NavigationAviary(BaseSingleAgentAviary):
     """ navigate to specified destination. Action -> actions (target (x, y, z)), execute actions using PID control """
 
     ################################################################################
@@ -14,12 +12,12 @@ class BalanceAviary(BaseSingleAgentAviary):
                  drone_model: DroneModel=DroneModel.CF2X,
                  initial_xyzs=None,
                  initial_rpys=None,
-                 physics: Physics=Physics.PYB_PID_OL,
+                 physics: Physics=Physics.PYB_PID_CL,
                  freq: int=240,
                  aggregate_phy_steps: int=1,
                  gui=False,
                  record=False, 
-                 obs: ObservationType=ObservationType.KIN_BAL,
+                 obs: ObservationType=ObservationType.KIN_ERR,
                  act: ActionType=ActionType.PID,
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
@@ -52,10 +50,14 @@ class BalanceAviary(BaseSingleAgentAviary):
             The type of action space (1 or 3D; RPMS, thurst and torques, or waypoint with PID control)
 
         """
+        # for recording
         self.rec_counter = 0
 
-        self.ADD_STICK = True
-        self.ERRORS = False
+        self.ADD_STICK = False
+        self.ERRORS = True
+
+        self.last_state_e = np.zeros(shape=(12,))
+        self.last_action_e = np.zeros(shape=(3,))
 
         super().__init__(drone_model=drone_model,
                          initial_xyzs=initial_xyzs,
@@ -68,8 +70,15 @@ class BalanceAviary(BaseSingleAgentAviary):
                          obs=obs,
                          act=act
                          )
-        self.STICK_HEIGHT = 1.0
-        self.EPISODE_LEN_SEC = 2.0
+        if self.ACT_TYPE != ActionType.PID:
+            print("[ERROR] in NavigationAviary.__init__(), ACT_TYPE must be ActionType.PID" )
+            exit()
+
+        # hover
+        self.TARGET_POSITION = np.array([0, 0, 1], dtype=np.float32)
+        self.TARGET_VELOCITY = 0.6
+
+        self.EPISODE_LEN_SEC = 2
 
         self.ext_dist_mag = ext_dist_mag
         self.ext_dist_index = 0
@@ -84,23 +93,8 @@ class BalanceAviary(BaseSingleAgentAviary):
             The reward.
 
         """
-        drone_state = self._getDroneStateVector(0)
-        stick_state = self._getStickStateVector()
-
-        # works 1
-        # r = -1 * np.linalg.norm(stick_state[3:5])
-
-        # works 2
-        r = -1 * np.linalg.norm(stick_state[3:5]) + -0.1 * np.linalg.norm(drone_state[2] - self.INIT_XYZS[0][2]) ** 2
-
-        # r = -1 * np.linalg.norm(stick_state[3:5]) + -0.1 * np.linalg.norm(drone_state[2] - self.INIT_XYZS[0][2]) ** 2
-
-        # print("*"*10)
-        # print(f"{drone_state[:3]}")
-        # print(f"{stick_state[:3]}")
-        # print(f"{r=}")
-
-        return r
+        state = self._getDroneStateVector(0)
+        return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3])**2
 
     ################################################################################
     
@@ -113,15 +107,7 @@ class BalanceAviary(BaseSingleAgentAviary):
             Whether the current episode is done.
 
         """
-        drone_state = self._getDroneStateVector(0)
-        stick_state = self._getStickStateVector()
-
-
-        # if self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC:
-        # stop if roll/pitch of the stick is too much
-        # if (self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC) or np.abs(stick_state[3]) > 60 * np.pi / 180 or np.abs(stick_state[4]) > 60 * np.pi / 180:
-        # stop if the stick falls below the drone
-        if (self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC) or (drone_state[2] >= stick_state[2]):
+        if self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC:
             return True
         else:
             return False
@@ -184,14 +170,14 @@ class BalanceAviary(BaseSingleAgentAviary):
                              state[16:20]
                              ]).reshape(20,)
 
-        # if self.GUI:
-        #     self._clipAndNormalizeStateWarning(state,
-        #                                        clipped_pos_xy,
-        #                                        clipped_pos_z,
-        #                                        clipped_rp,
-        #                                        clipped_vel_xy,
-        #                                        clipped_vel_z
-        #                                        )
+        if self.GUI:
+            self._clipAndNormalizeStateWarning(state,
+                                               clipped_pos_xy,
+                                               clipped_pos_z,
+                                               clipped_rp,
+                                               clipped_vel_xy,
+                                               clipped_vel_z
+                                               )
 
         normalized_pos_xy = clipped_pos_xy / MAX_XY
         normalized_pos_z = clipped_pos_z / MAX_Z
@@ -214,29 +200,6 @@ class BalanceAviary(BaseSingleAgentAviary):
 
         return clipped
     
-
-    def _clipAndNormalizeStickState(self, state):
-        MAX_LIN_VEL_XY = 3 
-        MAX_LIN_VEL_Z = 1
-
-        MAX_XY = MAX_LIN_VEL_XY*self.EPISODE_LEN_SEC
-        # MAX_Z = MAX_LIN_VEL_Z*self.EPISODE_LEN_SEC
-        MAX_Z = 5
-
-        MAX_PITCH_ROLL = np.pi # Full range
-
-        clipped_pos_xy = np.clip(state[0:2], -MAX_XY, MAX_XY)
-        clipped_pos_z = np.clip(state[2], 0, MAX_Z)
-        clipped_rp = np.clip(state[3:5], -MAX_PITCH_ROLL, MAX_PITCH_ROLL)
-        clipped_y = state[5]
-
-        clipped = np.hstack([clipped_pos_xy, clipped_pos_z, clipped_rp, clipped_y])
-
-        # if self.GUI and any(clipped != state):
-        #     print(f"[stick clipped]: {state=} | {clipped=}")
-
-        return clipped
-
     ################################################################################
     
     def _clipAndNormalizeStateWarning(self,
