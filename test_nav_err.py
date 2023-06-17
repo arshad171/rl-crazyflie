@@ -34,7 +34,7 @@ from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "results-nav-dist-err"
+DIR = "results-nav"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -64,7 +64,7 @@ NUM_PHYSICS_STEPS = 1
 PERIOD = 10
 
 # "train" / "test"
-MODE = Modes.TEST
+MODE = Modes.TRAIN_TEST
 
 NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
@@ -105,7 +105,7 @@ def run(dist):
 
     # nav_env = Monitor(nav_env, TB_LOGS_PATH)
 
-    if MODE == Modes.TRAIN:
+    if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         n_actions = nav_env.action_space.shape[-1]
         mu = np.zeros(n_actions)
         sigma = 0.5 * np.ones(n_actions)
@@ -137,7 +137,7 @@ def run(dist):
 
         return None
 
-    elif MODE == Modes.TEST:
+    elif MODE == Modes.TEST or MODE == Modes.TRAIN_TEST:
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
         model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
