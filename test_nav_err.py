@@ -33,16 +33,18 @@ from rl_crazyflie.utils.Logger import Logger
 
 # from plotter import plot
 
-MODEL_PATH = "./results-nav/model"
-ENV_PATH = "./results-nav/env"
-LOGS_PATH = "./results-nav/logs"
-TB_LOGS_PATH = "./results-nav/logs"
-PLT_LOGS_PATH = "./results-nav/plt"
+DIR = "results-nav-dist-err"
+
+MODEL_PATH = f"./{DIR}/model"
+ENV_PATH = f"./{DIR}/env"
+LOGS_PATH = f"./{DIR}/logs"
+TB_LOGS_PATH = f"./{DIR}/logs"
+PLT_LOGS_PATH = f"./{DIR}/plt"
 
 # define defaults
-DEFAULT_GUI = False
+DEFAULT_GUI = True
 DEFAULT_RECORD_VIDEO = False
-DEFAULT_OUTPUT_FOLDER = "./results-nav/rec"
+DEFAULT_OUTPUT_FOLDER = f"./{DIR}/rec"
 
 DEFAULT_DRONES = DroneModel("cf2x")
 DEFAULT_NUM_DRONES = 1
@@ -61,12 +63,12 @@ NUM_PHYSICS_STEPS = 1
 PERIOD = 10
 
 # "train" / "test"
-MODE = "train"
+MODE = "test"
 
-NUM_EVAL_EPISODES = 3
+NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
-TEST_EXT_DIST_STEPS = 10
+TEST_EXT_DIST_STEPS = 3
 
 FLIP_FREQ = -1 if MODE == "test" else 20
 
