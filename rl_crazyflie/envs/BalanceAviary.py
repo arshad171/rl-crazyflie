@@ -253,12 +253,12 @@ class BalanceAviary(BaseSingleAgentAviary):
         
         """
         if not(clipped_pos_xy == np.array(state[0:2])).all():
-            print("[WARNING] it", self.step_counter, "in NavigationAviary._clipAndNormalizeState(), clipped xy position [{:.2f} {:.2f}]".format(state[0], state[1]))
+            print("[WARNING] it", self.step_counter, "in NavigationAviaryErr._clipAndNormalizeState(), clipped xy position [{:.2f} {:.2f}]".format(state[0], state[1]))
         if not(clipped_pos_z == np.array(state[2])).all():
-            print("[WARNING] it", self.step_counter, "in NavigationAviary._clipAndNormalizeState(), clipped z position [{:.2f}]".format(state[2]))
+            print("[WARNING] it", self.step_counter, "in NavigationAviaryErr._clipAndNormalizeState(), clipped z position [{:.2f}]".format(state[2]))
         if not(clipped_rp == np.array(state[7:9])).all():
-            print("[WARNING] it", self.step_counter, "in NavigationAviary._clipAndNormalizeState(), clipped roll/pitch [{:.2f} {:.2f}]".format(state[7], state[8]))
+            print("[WARNING] it", self.step_counter, "in NavigationAviaryErr._clipAndNormalizeState(), clipped roll/pitch [{:.2f} {:.2f}]".format(state[7], state[8]))
         if not(clipped_vel_xy == np.array(state[10:12])).all():
-            print("[WARNING] it", self.step_counter, "in NavigationAviary._clipAndNormalizeState(), clipped xy velocity [{:.2f} {:.2f}]".format(state[10], state[11]))
+            print("[WARNING] it", self.step_counter, "in NavigationAviaryErr._clipAndNormalizeState(), clipped xy velocity [{:.2f} {:.2f}]".format(state[10], state[11]))
         if not(clipped_vel_z == np.array(state[12])).all():
-            print("[WARNING] it", self.step_counter, "in NavigationAviary._clipAndNormalizeState(), clipped z velocity [{:.2f}]".format(state[12]))
+            print("[WARNING] it", self.step_counter, "in NavigationAviaryErr._clipAndNormalizeState(), clipped z velocity [{:.2f}]".format(state[12]))

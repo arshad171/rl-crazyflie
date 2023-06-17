@@ -18,7 +18,7 @@ from gym_pybullet_drones.utils.enums import DroneModel, Physics
 from gym_pybullet_drones.utils.utils import sync
 
 # from gym_pybullet_drones.utils.Logger import Logger
-from stable_baselines3 import TD3, A2C
+from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.a2c import MlpPolicy
@@ -28,7 +28,7 @@ from stable_baselines3.common.monitor import Monitor
 
 from gym.envs.registration import register
 
-from rl_crazyflie.envs.NavigationAviary import NavigationAviary
+from rl_crazyflie.envs.NavigationAviaryErr import NavigationAviaryErr
 from rl_crazyflie.utils.Logger import Logger
 
 # from plotter import plot
@@ -63,24 +63,25 @@ PERIOD = 10
 # "train" / "test"
 MODE = "train"
 
-# hyperparams for training
-NUM_EPISODES = 5e5
-ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
-CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
-TRAIN_EXT_DIST = np.array([
-    [0.0, 0.0, 0.0],
-    [0.01, 0.0, 0.0],
-    [0.0, 0.0, 0.01],
-    [0.01, 0.01, 0.01],
-])
-
-
 NUM_EVAL_EPISODES = 3
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 10
 
-FLIP_FREQ = -1 if MODE == "test" else 5
+FLIP_FREQ = -1 if MODE == "test" else 20
+
+# hyperparams for training
+NUM_EPISODES = 1e6
+ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
+CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
+TRAIN_EXT_DIST = np.array([
+    [0.0, 0.0, 0.0],
+    [0.05, 0.0, 0.0],
+    [0.0, 0.0, 0.05],
+    [0.025, 0.025, 0.025],
+])
+
+
 
 
 def run(dist):
@@ -107,7 +108,7 @@ def run(dist):
         sigma = 0.5 * np.ones(n_actions)
 
         new_logger = configure(LOGS_PATH, ["stdout", "csv", "tensorboard"])
-        model = TD3(
+        model = PPO(
             "MlpPolicy",
             nav_env,
             # policy_kwargs=dict(net_arch=dict(pi=ACTOR_NET_ARCH, qf=CRITIC_NET_ARCH)),
@@ -118,7 +119,7 @@ def run(dist):
 
         # # resume training
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
-        # model = TD3.load(MODEL_PATH, nav_env)
+        # model = PPO.load(MODEL_PATH, nav_env)
 
         model.set_logger(new_logger)
         model.learn(
@@ -135,7 +136,7 @@ def run(dist):
 
     elif MODE == "test":
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
-        model = TD3.load(MODEL_PATH, nav_env)
+        model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
 
         logger = Logger(
