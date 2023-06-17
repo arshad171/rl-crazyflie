@@ -28,7 +28,7 @@ from stable_baselines3.common.monitor import Monitor
 
 from gym.envs.registration import register
 
-from rl_crazyflie.envs.NavigationAviaryErr import NavigationAviaryErr
+from rl_crazyflie.envs.NavigationAviary import NavigationAviary
 from rl_crazyflie.utils.Logger import Logger
 
 # from plotter import plot
@@ -61,7 +61,7 @@ NUM_PHYSICS_STEPS = 1
 PERIOD = 10
 
 # "train" / "test"
-MODE = "train"
+MODE = "test"
 
 NUM_EVAL_EPISODES = 3
 TEST_EXT_DIST_X_MAX = 0.1
@@ -86,7 +86,7 @@ TRAIN_EXT_DIST = np.array([
 
 def run(dist):
     nav_env = gym.make(
-        "navigation-aviary-err-v0",
+        "navigation-aviary-v0",
         **{
             "drone_model": DEFAULT_DRONES,
             "initial_xyzs": INIT_XYZS,

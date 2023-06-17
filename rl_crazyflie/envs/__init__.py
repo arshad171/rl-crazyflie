@@ -7,5 +7,10 @@ register(
 
 register(
     id="navigation-aviary-v0",
+    entry_point="rl_crazyflie.envs.NavigationAviary:NavigationAviary",
+)
+
+register(
+    id="navigation-aviary-err-v0",
     entry_point="rl_crazyflie.envs.NavigationAviaryErr:NavigationAviaryErr",
 )
