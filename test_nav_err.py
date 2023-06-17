@@ -30,6 +30,7 @@ from gym.envs.registration import register
 
 from rl_crazyflie.envs.NavigationAviaryErr import NavigationAviaryErr
 from rl_crazyflie.utils.Logger import Logger
+from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
@@ -42,7 +43,7 @@ TB_LOGS_PATH = f"./{DIR}/logs"
 PLT_LOGS_PATH = f"./{DIR}/plt"
 
 # define defaults
-DEFAULT_GUI = True
+DEFAULT_GUI = False
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OUTPUT_FOLDER = f"./{DIR}/rec"
 
@@ -63,14 +64,14 @@ NUM_PHYSICS_STEPS = 1
 PERIOD = 10
 
 # "train" / "test"
-MODE = "test"
+MODE = Modes.TEST
 
 NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
-TEST_EXT_DIST_STEPS = 3
+TEST_EXT_DIST_STEPS = 10
 
-FLIP_FREQ = -1 if MODE == "test" else 20
+FLIP_FREQ = -1 if MODE == Modes.TRAIN else 20
 
 # hyperparams for training
 NUM_EPISODES = 1e6
@@ -104,7 +105,7 @@ def run(dist):
 
     # nav_env = Monitor(nav_env, TB_LOGS_PATH)
 
-    if MODE == "train":
+    if MODE == Modes.TRAIN:
         n_actions = nav_env.action_space.shape[-1]
         mu = np.zeros(n_actions)
         sigma = 0.5 * np.ones(n_actions)
@@ -136,7 +137,7 @@ def run(dist):
 
         return None
 
-    elif MODE == "test":
+    elif MODE == Modes.TEST:
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
         model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
@@ -164,12 +165,16 @@ def run(dist):
         # action, _ = model.predict(next_obs)
         # print(model.actor(next_obs)[0])
 
+        distance_travelled = 0.0
+        prev_state = np.zeros(shape=(3,))
         START = time.time()
         for i in range(
             0, int(DEFAULT_DURATION_SEC * nav_env.SIM_FREQ), NUM_PHYSICS_STEPS
         ):
             action, _ = model.predict(next_obs)
             next_obs, reward, done, info = nav_env.step(action)
+            distance_travelled += np.linalg.norm(next_obs[:3] - prev_state)
+            prev_state = next_obs[:3]
             # print(action)
 
             # logger.log(
@@ -202,13 +207,13 @@ def run(dist):
         # logger.save_as_csv(comment="test")
         # plot()
 
-        return mean_eps_reward, std_eps_reward, mean_step_reward
+        return mean_eps_reward, std_eps_reward, mean_step_reward, distance_travelled
 
 
 if __name__ == "__main__":
-    if MODE == "train":
+    if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         run(TRAIN_EXT_DIST)
-    elif MODE == "test":
+    elif MODE == Modes.TEST or MODE == Modes.TRAIN_TEST:
         ext_dists = {
             "x": np.vstack(
                 [
@@ -247,7 +252,7 @@ if __name__ == "__main__":
             for i in range(TEST_EXT_DIST_STEPS):
                 dist = ext_dists[dir][i, :]
 
-                mean_eps_reward, std_eps_reward, mean_step_reward = run(dist=dist)
+                mean_eps_reward, std_eps_reward, mean_step_reward, distance_travelled = run(dist=dist)
 
                 # ext_dists_res_df = pd.concat([
                 #     ext_dists_res_df,
@@ -269,6 +274,7 @@ if __name__ == "__main__":
                         "mean_eps_reward": mean_eps_reward,
                         "std_eps_reward": std_eps_reward,
                         "mean_step_reward": mean_step_reward,
+                        "distance_travelled": distance_travelled,
                     },
                     # ignore_index=True,
                 )
