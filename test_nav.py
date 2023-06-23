@@ -71,41 +71,39 @@ TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 10
 
-FLIP_FREQ = -1 if MODE == "test" else 20
+FLIP_FREQ = 20
 
 # hyperparams for training
 NUM_EPISODES = 1e6
 ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
 CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
-TRAIN_EXT_DIST = np.array([
-    [0.0, 0.0, 0.0],
-    [0.05, 0.0, 0.0],
-    [0.0, 0.0, 0.05],
-    [0.025, 0.025, 0.025],
-])
-
-
+TRAIN_EXT_DIST = np.array(
+    [
+        [0.0, 0.0, 0.0],
+        [0.05, 0.0, 0.0],
+        [0.0, 0.0, 0.05],
+        [0.025, 0.025, 0.025],
+    ]
+)
 
 
 def run(dist):
-    nav_env = gym.make(
-        "navigation-aviary-v0",
-        **{
-            "drone_model": DEFAULT_DRONES,
-            "initial_xyzs": INIT_XYZS,
-            "initial_rpys": INIT_RPYS,
-            "freq": DEFAULT_SIMULATION_FREQ_HZ,
-            "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-            "gui": DEFAULT_GUI,
-            "record": DEFAULT_RECORD_VIDEO,
-            "ext_dist_mag": dist,
-            "flip_freq": FLIP_FREQ,
-        },
-    )
-
-    # nav_env = Monitor(nav_env, TB_LOGS_PATH)
-
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
+        nav_env = gym.make(
+            "navigation-aviary-err-v0",
+            **{
+                "drone_model": DEFAULT_DRONES,
+                "initial_xyzs": INIT_XYZS,
+                "initial_rpys": INIT_RPYS,
+                "freq": DEFAULT_SIMULATION_FREQ_HZ,
+                "aggregate_phy_steps": NUM_PHYSICS_STEPS,
+                "gui": DEFAULT_GUI,
+                "record": DEFAULT_RECORD_VIDEO,
+                "ext_dist_mag": dist,
+                "flip_freq": FLIP_FREQ,
+            },
+        )
+
         n_actions = nav_env.action_space.shape[-1]
         mu = np.zeros(n_actions)
         sigma = 0.5 * np.ones(n_actions)
@@ -138,6 +136,21 @@ def run(dist):
         return None
 
     elif MODE == Modes.TEST or MODE == Modes.TRAIN_TEST:
+        FLIP_FREQ = -1
+        nav_env = gym.make(
+            "navigation-aviary-err-v0",
+            **{
+                "drone_model": DEFAULT_DRONES,
+                "initial_xyzs": INIT_XYZS,
+                "initial_rpys": INIT_RPYS,
+                "freq": DEFAULT_SIMULATION_FREQ_HZ,
+                "aggregate_phy_steps": NUM_PHYSICS_STEPS,
+                "gui": DEFAULT_GUI,
+                "record": DEFAULT_RECORD_VIDEO,
+                "ext_dist_mag": dist,
+                "flip_freq": FLIP_FREQ,
+            },
+        )
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
         model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
@@ -252,7 +265,12 @@ if __name__ == "__main__":
             for i in range(TEST_EXT_DIST_STEPS):
                 dist = ext_dists[dir][i, :]
 
-                mean_eps_reward, std_eps_reward, mean_step_reward, distance_travelled = run(dist=dist)
+                (
+                    mean_eps_reward,
+                    std_eps_reward,
+                    mean_step_reward,
+                    distance_travelled,
+                ) = run(dist=dist)
 
                 # ext_dists_res_df = pd.concat([
                 #     ext_dists_res_df,
