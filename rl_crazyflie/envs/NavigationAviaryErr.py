@@ -18,7 +18,7 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
                  gui=False,
                  record=False, 
                  obs: ObservationType=ObservationType.KIN_ERR,
-                 act: ActionType=ActionType.PID,
+                 act: ActionType=ActionType.PID_VEL,
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
                  ):
@@ -58,6 +58,7 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
 
         self.last_state_e = np.zeros(shape=(12,))
         self.last_action_e = np.zeros(shape=(3,))
+        self.last_error_e = np.zeros(shape=(3,))
 
         super().__init__(drone_model=drone_model,
                          initial_xyzs=initial_xyzs,
@@ -70,10 +71,6 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
                          obs=obs,
                          act=act
                          )
-        if self.ACT_TYPE != ActionType.PID:
-            print("[ERROR] in NavigationAviaryErr.__init__(), ACT_TYPE must be ActionType.PID" )
-            exit()
-
         # hover
         self.TARGET_POSITION = np.array([0, 0, 1], dtype=np.float32)
         self.TARGET_VELOCITY = 0.6
@@ -94,7 +91,8 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
 
         """
         state = self._getDroneStateVector(0)
-        return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3])**2
+        error = self._getLastError()
+        return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3]) ** 2 + -1 * np.linalg.norm(error) ** 2
 
     ################################################################################
     

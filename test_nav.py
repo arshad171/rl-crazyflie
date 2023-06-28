@@ -34,7 +34,7 @@ from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "results-nav-dist"
+DIR = "results-nav"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -66,7 +66,7 @@ PERIOD = 10
 # "train" / "test"
 MODE = Modes.TEST
 
-NUM_EVAL_EPISODES = 1
+NUM_EVAL_EPISODES = 3
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 10
@@ -74,7 +74,7 @@ TEST_EXT_DIST_STEPS = 10
 FLIP_FREQ = 20
 
 # hyperparams for training
-NUM_EPISODES = 1e6
+NUM_EPISODES = 5e5
 ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
 CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
 TRAIN_EXT_DIST = np.array(
@@ -89,6 +89,7 @@ TRAIN_EXT_DIST = np.array(
 
 def run(dist):
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
+        global FLIP_FREQ
         nav_env = gym.make(
             "navigation-aviary-err-v0",
             **{

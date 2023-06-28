@@ -1,3 +1,4 @@
+import copy
 import sys
 
 sys.path.append("./src")
@@ -43,7 +44,7 @@ TB_LOGS_PATH = f"./{DIR}/logs"
 PLT_LOGS_PATH = f"./{DIR}/plt"
 
 # define defaults
-DEFAULT_GUI = False
+DEFAULT_GUI = True
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OUTPUT_FOLDER = f"./{DIR}/rec"
 
@@ -66,7 +67,7 @@ PERIOD = 10
 # "train" / "test"
 MODE = Modes.TEST
 
-NUM_EVAL_EPISODES = 1
+NUM_EVAL_EPISODES = 3
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 10
@@ -74,7 +75,7 @@ TEST_EXT_DIST_STEPS = 10
 FLIP_FREQ = 20
 
 # hyperparams for training
-NUM_EPISODES = 1e6
+NUM_EPISODES = 5e5
 ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
 CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
 TRAIN_EXT_DIST = np.array(
@@ -89,6 +90,7 @@ TRAIN_EXT_DIST = np.array(
 
 def run(dist):
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
+        global FLIP_FREQ
         nav_env = gym.make(
             "navigation-aviary-err-v0",
             **{
@@ -117,6 +119,16 @@ def run(dist):
             # action_noise=NormalActionNoise(mu, sigma),
             tensorboard_log=TB_LOGS_PATH,
         )
+
+        # # test
+        # nav_env.reset()
+        # # while True:
+        # for _ in range(100):
+        #     obs, rew, done, info = nav_env.step(np.array([1.0, 1.0, 1.0, -1.0]))
+        #     print("-"*10)
+        #     print(obs)
+        #     print("-"*10)
+        # exit(0)
 
         # # resume training
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
@@ -185,10 +197,32 @@ def run(dist):
         for i in range(
             0, int(DEFAULT_DURATION_SEC * nav_env.SIM_FREQ), NUM_PHYSICS_STEPS
         ):
+            # temp_old_state = next_obs
+
             action, _ = model.predict(next_obs)
             next_obs, reward, done, info = nav_env.step(action)
             distance_travelled += np.linalg.norm(next_obs[:3] - prev_state)
             prev_state = next_obs[:3]
+
+            # print("*"*10)
+
+            # temp_state = copy.deepcopy(next_obs)
+            # print("state: ", temp_state)
+            # temp_action_ze, _ = model.predict(temp_state, deterministic=True)
+            # temp_state[12:] = 0
+            # temp_action_e, _ = model.predict(temp_state, deterministic=True)
+
+            # print("action_ze: ", 0.05  * temp_action_ze)
+            # print("action_e: ", 0.05 * temp_action_e)
+
+            # print("old state: ", temp_old_state[:3])
+            # print("next state: ", temp_old_state[:3] + 0.05 * temp_action_e)
+            # print("curr state: ", next_obs[:3])
+            # print("error (th): ", next_obs[:3] - (temp_old_state[:3] + 0.05 * temp_action_e))
+            # print("error (state): ", next_obs[12:])
+
+            # print("*"*10)
+
             # print(action)
 
             # logger.log(
