@@ -18,7 +18,7 @@ class NavigationAviary(BaseSingleAgentAviary):
                  gui=False,
                  record=False, 
                  obs: ObservationType=ObservationType.KIN,
-                 act: ActionType=ActionType.PID,
+                 act: ActionType=ActionType.PID_VEL,
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
                  ):
@@ -70,10 +70,6 @@ class NavigationAviary(BaseSingleAgentAviary):
                          obs=obs,
                          act=act
                          )
-        if self.ACT_TYPE != ActionType.PID:
-            print("[ERROR] in NavigationAviary.__init__(), ACT_TYPE must be ActionType.PID" )
-            exit()
-
         # hover
         self.TARGET_POSITION = np.array([0, 0, 1], dtype=np.float32)
         self.TARGET_VELOCITY = 0.6

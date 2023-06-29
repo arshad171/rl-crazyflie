@@ -21,6 +21,7 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
                  act: ActionType=ActionType.PID_VEL,
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
+                 eval_reward=False,
                  ):
         """Initialization of a single agent RL environment.
 
@@ -80,6 +81,7 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
         self.ext_dist_mag = ext_dist_mag
         self.ext_dist_index = 0
         self.flip_freq = flip_freq
+        self.eval_reward = eval_reward
     
     def _computeReward(self):
         """Computes the current reward value.
@@ -92,7 +94,10 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
         """
         state = self._getDroneStateVector(0)
         error = self._getLastError()
-        return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3]) ** 2 + -1 * np.linalg.norm(error) ** 2
+        if self.eval_reward:
+            return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3]) ** 2
+        else:
+            return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3]) ** 2 + -1 * np.linalg.norm(error) ** 2
 
     ################################################################################
     
@@ -106,6 +111,7 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
 
         """
         if self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC:
+            self._resetLastError()
             return True
         else:
             return False
