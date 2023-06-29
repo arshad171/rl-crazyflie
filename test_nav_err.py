@@ -35,7 +35,7 @@ from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "results-nav-dist-error-wi-v-4"
+DIR = "results-nav-dist-err-rew-wi-v-5"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -68,10 +68,10 @@ PERIOD = 10
 # "train" / "test"
 MODE = Modes.TEST
 
-NUM_EVAL_EPISODES = 1
+NUM_EVAL_EPISODES = 3
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
-TEST_EXT_DIST_STEPS = 3
+TEST_EXT_DIST_STEPS = 5
 
 FLIP_FREQ = 20
 
@@ -211,6 +211,8 @@ def run(dist, dir=None):
                 "x": next_obs[0],
                 "y": next_obs[1],
                 "z": next_obs[2],
+                # "err": next_obs[-3:],
+                "err": np.linalg.norm(next_obs[-3:]),
             })
 
             # temp_old_state = next_obs
@@ -271,7 +273,7 @@ def run(dist, dir=None):
 
         df_coordinates = pd.DataFrame(coordinates)
 
-        df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"{dir}_{np.sum(dist):.3f}.csv"))
+        df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"{dir}_{np.sum(dist):.3f}.csv"), index=False)
 
         # logger.save_as_csv(comment="test")
         # plot()

@@ -34,7 +34,7 @@ from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "results-nav-dist-v-2"
+DIR = "results-nav-v-2"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -65,14 +65,14 @@ NUM_PHYSICS_STEPS = 1
 PERIOD = 10
 
 # "train" / "test"
-MODE = Modes.TEST
+MODE = Modes.TRAIN
 
-NUM_EVAL_EPISODES = 1
+NUM_EVAL_EPISODES = 3
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
-TEST_EXT_DIST_STEPS = 3
+TEST_EXT_DIST_STEPS = 5
 
-FLIP_FREQ = 20
+FLIP_FREQ = None
 
 # hyperparams for training
 NUM_EPISODES = 5e5
@@ -237,7 +237,7 @@ def run(dist, dir=None):
 
         df_coordinates = pd.DataFrame(coordinates)
 
-        df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"{dir}_{np.sum(dist):.3f}.csv"))
+        df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"{dir}_{np.sum(dist):.3f}.csv"), index=False)
 
         # logger.save_as_csv(comment="test")
         # plot()
