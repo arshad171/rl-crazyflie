@@ -34,7 +34,7 @@ from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "results-nav"
+DIR = "results-nav-dist-v-2"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -43,6 +43,7 @@ TB_LOGS_PATH = f"./{DIR}/logs"
 PLT_LOGS_PATH = f"./{DIR}/plt"
 
 # define defaults
+VIEW = False
 DEFAULT_GUI = False
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OUTPUT_FOLDER = f"./{DIR}/rec"
@@ -66,10 +67,10 @@ PERIOD = 10
 # "train" / "test"
 MODE = Modes.TEST
 
-NUM_EVAL_EPISODES = 3
+NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
-TEST_EXT_DIST_STEPS = 10
+TEST_EXT_DIST_STEPS = 3
 
 FLIP_FREQ = 20
 
@@ -87,7 +88,7 @@ TRAIN_EXT_DIST = np.array(
 )
 
 
-def run(dist):
+def run(dist, dir=None):
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         global FLIP_FREQ
         nav_env = gym.make(
@@ -150,26 +151,32 @@ def run(dist):
                 "record": DEFAULT_RECORD_VIDEO,
                 "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
+                "eval_reward": True,
             },
         )
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
         model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
 
-        logger = Logger(
-            logging_freq_hz=int(nav_env.SIM_FREQ / nav_env.AGGR_PHY_STEPS),
-            num_drones=1,
-            output_folder=PLT_LOGS_PATH,
-        )
+        # logger = Logger(
+        #     logging_freq_hz=int(nav_env.SIM_FREQ / nav_env.AGGR_PHY_STEPS),
+        #     num_drones=1,
+        #     output_folder=PLT_LOGS_PATH,
+        # )
 
-        # simulation
-        # rewards = evaluate_policy(model, nav_env, n_eval_episodes=3, return_episode_rewards=True)
-        mean_eps_reward, std_eps_reward = evaluate_policy(
-            model, nav_env, n_eval_episodes=NUM_EVAL_EPISODES, render=False
-        )
-        mean_step_reward = mean_eps_reward / (DEFAULT_DURATION_SEC * nav_env.SIM_FREQ)
+        if not VIEW:
+            # simulation
+            # rewards = evaluate_policy(model, nav_env, n_eval_episodes=3, return_episode_rewards=True)
+            mean_eps_reward, std_eps_reward = evaluate_policy(
+                model, nav_env, n_eval_episodes=NUM_EVAL_EPISODES, render=False
+            )
+            mean_step_reward = mean_eps_reward / (DEFAULT_DURATION_SEC * nav_env.SIM_FREQ)
 
-        print(f"{mean_eps_reward=} | {std_eps_reward=} | {mean_step_reward=}")
+            print(f"{mean_eps_reward=} | {std_eps_reward=} | {mean_step_reward=}")
+        else:
+            mean_eps_reward = 0
+            std_eps_reward = 0
+            mean_step_reward = 0
 
         optimal_controller = DSLPIDControl(drone_model=DEFAULT_DRONES)
         ctrl = [optimal_controller for _ in range(DEFAULT_NUM_DRONES)]
@@ -179,12 +186,21 @@ def run(dist):
         # action, _ = model.predict(next_obs)
         # print(model.actor(next_obs)[0])
 
+        coordinates = []
+
         distance_travelled = 0.0
         prev_state = np.zeros(shape=(3,))
         START = time.time()
         for i in range(
             0, int(DEFAULT_DURATION_SEC * nav_env.SIM_FREQ), NUM_PHYSICS_STEPS
         ):
+
+            coordinates.append({
+                "x": next_obs[0],
+                "y": next_obs[1],
+                "z": next_obs[2],
+            })
+
             action, _ = model.predict(next_obs)
             next_obs, reward, done, info = nav_env.step(action)
             distance_travelled += np.linalg.norm(next_obs[:3] - prev_state)
@@ -205,6 +221,7 @@ def run(dist):
             #     ),
             # )
 
+
             # if done:
             #     nav_env.reset()
 
@@ -217,6 +234,10 @@ def run(dist):
         nav_env.reset()
         nav_env.close()
         del nav_env
+
+        df_coordinates = pd.DataFrame(coordinates)
+
+        df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"{dir}_{np.sum(dist):.3f}.csv"))
 
         # logger.save_as_csv(comment="test")
         # plot()
@@ -231,23 +252,23 @@ if __name__ == "__main__":
         ext_dists = {
             "x": np.vstack(
                 [
-                    np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS),
-                    np.zeros(shape=(TEST_EXT_DIST_STEPS,)),
-                    np.zeros(shape=(TEST_EXT_DIST_STEPS,)),
+                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS)]),
+                    np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
+                    np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
                 ]
             ).transpose(),
             "z": np.vstack(
                 [
-                    np.zeros(shape=(TEST_EXT_DIST_STEPS,)),
-                    np.zeros(shape=(TEST_EXT_DIST_STEPS,)),
-                    np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS),
+                    np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
+                    np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
+                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS)]),
                 ]
             ).transpose(),
             "xyz": np.vstack(
                 [
-                    np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS),
-                    np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS),
-                    np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS),
+                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS)]),
+                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS)]),
+                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS)]),
                 ]
             ).transpose(),
         }
@@ -263,15 +284,19 @@ if __name__ == "__main__":
         #     ]
         # )
         for dir in ext_dists:
-            for i in range(TEST_EXT_DIST_STEPS):
+            for i in range(2 * TEST_EXT_DIST_STEPS):
                 dist = ext_dists[dir][i, :]
+
+                print("*" * 10)
+                print(f"dir: {dir} | dist: {dist}")
+                print("*" * 10)
 
                 (
                     mean_eps_reward,
                     std_eps_reward,
                     mean_step_reward,
                     distance_travelled,
-                ) = run(dist=dist)
+                ) = run(dist=dist, dir=dir)
 
                 # ext_dists_res_df = pd.concat([
                 #     ext_dists_res_df,
