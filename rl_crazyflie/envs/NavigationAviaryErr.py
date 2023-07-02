@@ -97,7 +97,7 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
         if self.eval_reward:
             return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3]) ** 2
         else:
-            return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3]) ** 2 + -1 * np.linalg.norm(error) ** 2
+            return -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3]) ** 2 + -0.5 * np.linalg.norm(error) ** 2
 
     ################################################################################
     

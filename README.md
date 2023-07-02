@@ -28,3 +28,21 @@ Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to
 - initializing stick at an angle helps after the agent is trained for 1e6
 
 - algorithmic convergence: stochastic policies (PPO, A2C) were found to converge better than deterministic (TD3).
+
+## Observations
+
+- Model with integral errors has a smoother path, while the other models have a zig-zag path with the agents taking long strides. But the error model does not stabilize well after reaching the destination.
+
+- The magnitude of the error decreases after a few RL steps.
+
+- The model trained on dist (without error) tends to overfit the training scenario (+ve dist), learns maneuvers with max velocity. This does not work well when the direction of wind is reversed or agent is initialized to different point.
+
+## Future
+
+- Train longer for better stabilization.
+
+- Errors vs Time
+
+- Init agent at destination and compare the deviations when subject to wind.
+
+- Smoothness $\int |\tau''(t)^2| dt$

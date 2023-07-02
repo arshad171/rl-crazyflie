@@ -35,13 +35,13 @@ from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "results-nav-dist-err-rew-wi-v-5"
+DIR = "results-nav-b_dist-err-rew-w_i-v-51"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
 LOGS_PATH = f"./{DIR}/logs"
 TB_LOGS_PATH = f"./{DIR}/logs"
-PLT_LOGS_PATH = f"./{DIR}/plt"
+PLT_LOGS_PATH = f"./{DIR}/plt/it"
 
 # define defaults
 VIEW = False
@@ -59,7 +59,7 @@ DEFAULT_SIMULATION_FREQ_HZ = 50
 DEFAULT_DURATION_SEC = 2
 DEFAULT_CONTROL_FREQ_HZ = 48
 
-INIT_XYZS = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
+INIT_XYZS = np.array([[1.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 INIT_RPYS = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 NUM_PHYSICS_STEPS = 1
 
@@ -68,23 +68,26 @@ PERIOD = 10
 # "train" / "test"
 MODE = Modes.TEST
 
-NUM_EVAL_EPISODES = 3
+NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
-TEST_EXT_DIST_STEPS = 5
+TEST_EXT_DIST_STEPS = 3
 
 FLIP_FREQ = 20
 
 # hyperparams for training
-NUM_EPISODES = 5e5
+NUM_EPISODES = 1e6
 ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
 CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
 TRAIN_EXT_DIST = np.array(
     [
         [0.0, 0.0, 0.0],
         [0.05, 0.0, 0.0],
+        [-0.05, 0.0, 0.0],
         [0.0, 0.0, 0.05],
+        [0.0, 0.0, -0.05],
         [0.025, 0.025, 0.025],
+        [-0.025, -0.025, -0.025],
     ]
 )
 
@@ -150,6 +153,9 @@ def run(dist, dir=None):
 
     elif MODE == Modes.TEST or MODE == Modes.TRAIN_TEST:
         FLIP_FREQ = -1
+
+        os.makedirs(PLT_LOGS_PATH, exist_ok=True)
+
         nav_env = gym.make(
             "navigation-aviary-err-v0",
             **{
