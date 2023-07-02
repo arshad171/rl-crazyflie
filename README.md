@@ -45,4 +45,6 @@ Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to
 
 - Init agent at destination and compare the deviations when subject to wind.
 
-- Smoothness $\int |\tau''(t)^2| dt$
+- Smoothness $\int |\tau''(t)^2| dt$, sum of second derivaties.
+
+- Table highlights.
