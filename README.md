@@ -47,4 +47,6 @@ Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to
 
 - Smoothness $\int |\tau''(t)^2| dt$, sum of second derivaties.
 
+- Steady-state errors.
+
 - Table highlights.
