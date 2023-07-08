@@ -39,14 +39,14 @@ Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to
 
 ## Future
 
-- Train longer for better stabilization.
+[x] Train longer for better stabilization.
 
-- Errors vs Time
+[x] Errors vs Time
 
-- Init agent at destination and compare the deviations when subject to wind.
+[-] Init agent at destination and compare the deviations when subject to wind.
 
-- Smoothness $\int |\tau''(t)^2| dt$, sum of second derivaties.
+[x] Smoothness $\int |\tau''(t)^2| dt$, sum of second derivaties.
 
-- Steady-state errors.
+[x] Steady-state errors.
 
-- Table highlights.
+[x] Table highlights.
