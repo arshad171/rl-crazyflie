@@ -139,7 +139,17 @@ class BalanceAviary(BaseSingleAgentAviary):
             Dummy value.
 
         """
-        return {"answer": 43} #### Calculated by the Deep Thought supercomputer in 7.5M years
+        drone_state = self._getDroneStateVector(0)
+        stick_state = self._getStickStateVector()
+
+        # works 1
+        # r = -1 * np.linalg.norm(stick_state[3:5])
+
+        # works 2
+        bal_rew = -1 * np.linalg.norm(stick_state[3:5])
+        nav_rew = -1 * np.linalg.norm(drone_state[2] - self.INIT_XYZS[0][2]) ** 2
+
+        return {"bal_rew": bal_rew, "nav_rew": nav_rew} #### Calculated by the Deep Thought supercomputer in 7.5M years
 
     ################################################################################
     
