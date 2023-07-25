@@ -13,8 +13,8 @@
 ├── rl_crazyflie                            # module
 │   ├── __init__.py
 │   ├── __pycache__
-│   ├── assets
-│   ├── envs
+│   ├── assets                              # assets: URDFs
+│   ├── envs                                # custom envs
 │   └── utils
 ├── scripts                                 # scripts to analyse/plot results
 │   ├── calc_intertia.py
