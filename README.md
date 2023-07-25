@@ -23,8 +23,8 @@
 │   └── viz_log_traj.ipynb
 ├── test_bal.py                             # train/test balance-aviary
 ├── test_mo_bal.py                          # train/test multi-objective balance-aviary
-├── test_nav.py                             # train/test navigation
-└── test_nav_err.py                         # train/test navigation with action feedback
+├── test_nav.py                             # train/test navigation-aviary
+└── test_nav_err.py                         # train/test navigation-aviary with action feedback
 ```
 
 ## Requirements
