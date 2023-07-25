@@ -1,8 +1,36 @@
 # RL CrazyFlie
 
+## Repository
+
+```bash
+.
+├── README.md
+├── results_models                          # explicitely saved models/results
+│   └── navigation
+├── results_plots                           # analysis results
+│   └── navigation
+├── rl-crazyflie.code-workspace
+├── rl_crazyflie                            # module
+│   ├── __init__.py
+│   ├── __pycache__
+│   ├── assets
+│   ├── envs
+│   └── utils
+├── scripts                                 # scripts to analyse/plot results
+│   ├── calc_intertia.py
+│   ├── err_mag.ipynb
+│   ├── tb_logs.ipynb
+│   └── viz_log_traj.ipynb
+├── test_bal.py                             # train/test balance-aviary
+├── test_mo_bal.py                          # train/test multi-objective balance-aviary
+├── test_nav.py                             # train/test navigation
+└── test_nav_err.py                         # train/test navigation with action feedback
+```
+
 ## Requirements
 
-1. Install `gym-pybullet-drones` in editable mode.
+1. Install `gym-pybullet-drones` fork from here [arshad171/gym-pybullet-drones:rl-enhancements](https://github.com/arshad171/gym-pybullet-drones). The `rl-enhancements` branch has some nifty enhancements for experiments and multi-objective RL.
+It is ideal to install the package in "editable" mode.
 2. No need to explicitely install `stable-baselines3`, it should be pulled as a dep by `gym-pybullet-drones`.
 
 ## URDF
