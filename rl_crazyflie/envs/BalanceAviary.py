@@ -23,6 +23,7 @@ class BalanceAviary(BaseSingleAgentAviary):
                  act: ActionType=ActionType.PID,
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
+                 output_folder="results",
                  ):
         """Initialization of a single agent RL environment.
 
@@ -66,7 +67,8 @@ class BalanceAviary(BaseSingleAgentAviary):
                          gui=gui,
                          record=record,
                          obs=obs,
-                         act=act
+                         act=act,
+                         output_folder=output_folder
                          )
         self.STICK_HEIGHT = 1.0
         self.EPISODE_LEN_SEC = 2.0
