@@ -1,4 +1,5 @@
-# %%
+import os
+import dill
 import numpy as np
 import torch as th
 
@@ -16,20 +17,20 @@ from rl_crazyflie.envs.MOBalanceAviary import MOBalanceAviary
 from rl_crazyflie.utils.constants import Modes
 
 
-# %%
-DIR = "results-mo"
+
+DIR = "results-mo-bal"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
-LOGS_PATH = f"./{DIR}/logs"
-TB_LOGS_PATH = f"./{DIR}/logs"
-PLT_LOGS_PATH = f"./{DIR}/plt/it"
+# LOGS_PATH = f"./{DIR}/logs"
+# TB_LOGS_PATH = f"./{DIR}/logs"
+# PLT_LOGS_PATH = f"./{DIR}/plt/it"
 
 # define defaults
 VIEW = False
 DEFAULT_GUI = False
 DEFAULT_RECORD_VIDEO = False
-DEFAULT_OUTPUT_FOLDER = f"./{DIR}/rec"
+DEFAULT_OUTPUT_FOLDER = f"./{DIR}"
 
 DEFAULT_DRONES = DroneModel("cf2x")
 DEFAULT_NUM_DRONES = 1
@@ -48,7 +49,7 @@ NUM_PHYSICS_STEPS = 1
 PERIOD = 10
 
 # "train" / "test"
-MODE = Modes.TEST
+MODE = Modes.TRAIN_TEST
 
 NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
@@ -59,8 +60,11 @@ FLIP_FREQ = 20
 
 # hyperparams for training
 NUM_EPISODES = 1e6
-ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
-CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
+NUM_ENVS = 4 # 4
+POP_SIZE = 6 # 6
+WARMUP_ITERATIONS = 10 # 80
+EVOLUTIONARY_ITERATIONS = 5 # 20
+# NET_ARCH = [50, 100, 500, 100, 50] # [64, 64]
 TRAIN_EXT_DIST = np.array(
     [
         [0.0, 0.0, 0.0],
@@ -74,114 +78,109 @@ TRAIN_EXT_DIST = np.array(
 )
 
 if __name__ == "__main__":
-    env_id = "mo-balance-aviary-v0"
-    ref_point = np.array([-1.0, -1.0])
+    os.makedirs(DEFAULT_OUTPUT_FOLDER, exist_ok=True)
+    if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
 
-    eval_env = mo_gym.make(
-    env_id,
-        **{
-            "drone_model": DEFAULT_DRONES,
-            "initial_xyzs": INIT_XYZS,
-            "initial_rpys": INIT_RPYS,
-            "freq": DEFAULT_SIMULATION_FREQ_HZ,
-            "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-            "gui": DEFAULT_GUI,
-            "record": DEFAULT_RECORD_VIDEO,
-            "ext_dist_mag": None,
-            "flip_freq": None,
-            "gui": False,
-        },
-    )
+        env_id = "mo-balance-aviary-v0"
+        ref_point = np.array([-1.0, -1.0])
 
-    # number of agents = pop_size (population size) param, (weights - agent) pairs
-    algo = PGMORL(
-        env_id=env_id,
-        origin=ref_point,
-        project_name="mo-bal",
-        num_envs=1,
-        # pop_size=1,
-        warmup_iterations=1,
-        evolutionary_iterations=1,
-        # num_weight_candidates=7,
-    )
-
-    pf = algo.train(
-        total_timesteps=int(1),
-        ref_point=ref_point,
-        known_pareto_front=None,
-        eval_env=eval_env,
-    )
-
-    print(pf)
-
-    # env = make_env(env_id, 422, 1, "PGMORL_test", gamma=0.995)()  # idx != 0 to avoid taking videos
-
-    # # Execution of trained policies
-    # for a in algo.archive.individuals:
-    #     scalarized, discounted_scalarized, reward, discounted_reward = eval_mo(
-    #         agent=a, env=env, w=np.array([1.0, 1.0]), render=True
-    #     )
-    #     print(f"Agent #{a.id}")
-    #     print(f"Scalarized: {scalarized}")
-    #     print(f"Discounted scalarized: {discounted_scalarized}")
-    #     print(f"Vectorial: {reward}")
-    #     print(f"Discounted vectorial: {discounted_reward}")
-
-
-# %%
-env = mo_gym.make(
-    env_id,
-    **{
-        "drone_model": DEFAULT_DRONES,
-        "initial_xyzs": INIT_XYZS,
-        "initial_rpys": INIT_RPYS,
-        "freq": DEFAULT_SIMULATION_FREQ_HZ,
-        "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-        "gui": DEFAULT_GUI,
-        "record": DEFAULT_RECORD_VIDEO,
-        "ext_dist_mag": None,
-        "flip_freq": None,
-        "gui": DEFAULT_USER_DEBUG_GUI,
-    },
-)
-
-# %%
-for a in algo.archive.individuals:
-        # w -> weight vector for discounted reward
-        scalarized, discounted_scalarized, reward, discounted_reward = eval_mo(
-            agent=a, env=env, w=np.array([1.0, 1.0]), render=True
+        env = mo_gym.make(
+        env_id,
+            **{
+                "drone_model": DEFAULT_DRONES,
+                "initial_xyzs": INIT_XYZS,
+                "initial_rpys": INIT_RPYS,
+                "freq": DEFAULT_SIMULATION_FREQ_HZ,
+                "aggregate_phy_steps": NUM_PHYSICS_STEPS,
+                "record": DEFAULT_RECORD_VIDEO,
+                "ext_dist_mag": None,
+                "flip_freq": None,
+                "gui": False,
+                "output_folder": DEFAULT_OUTPUT_FOLDER,
+            },
         )
-        print(f"Agent #{a.id}")
-        print(f"Scalarized: {scalarized}")
-        print(f"Discounted scalarized: {discounted_scalarized}")
-        print(f"Vectorial: {reward}")
-        print(f"Discounted vectorial: {discounted_reward}")
-        print("-----")
 
-# %%
-def scalarization(reward: np.ndarray):
-        # return min(reward[0], reward[1] // 2)
-        return np.linalg.norm(reward * [1, 0.5])
+        # number of agents = pop_size (population size) param, (weights - agent) pairs
+        algo = PGMORL(
+            env_id=env_id,
+            origin=ref_point,
+            project_name="mo-bal",
+            num_envs=NUM_ENVS,
+            pop_size=POP_SIZE,
+            warmup_iterations=WARMUP_ITERATIONS,
+            evolutionary_iterations=EVOLUTIONARY_ITERATIONS,
+            # net_arch=NET_ARCH,
+        )
 
-for a in algo.archive.individuals:
-        print(eval_mo_reward_conditioned(a, env=env, scalarization=scalarization))
+        pf = algo.train(
+            total_timesteps=int(NUM_EPISODES),
+            ref_point=ref_point,
+            known_pareto_front=None,
+            eval_env=env,
+        )
 
-# %%
-# for a in algo.archive.individuals:
-#     make_gif(env, a, weight=[1, 1], fullpath="./test.gif")
+        dill.dump(env, open(ENV_PATH, "wb"))
+        dill.dump(algo, open(MODEL_PATH, "wb"))
 
-# %%
-# (weights - agent) pairs
-# number of agents = pop_size param
-for a in algo.agents:
-    print(a)
-    print(a.weights)
-    # mo_ppo network
-    print(a.networks)
-    # predict critic: networks.critic()
-    print(a.networks.get_value(th.zeros(size=(1, env.observation_space.shape[0]))))
-    # predict actor: networks.actor_mean()
-    print(a.networks.get_action_and_value(th.zeros(size=(1, env.observation_space.shape[0]))))
-    print("-----")
+
+    if MODE == Modes.TEST or MODE == Modes.TRAIN_TEST:
+        load_env = dill.load(open(ENV_PATH, "rb"))
+        load_algo = dill.load(open(MODEL_PATH, "rb"))
+
+        env = mo_gym.make(
+            env_id,
+            **{
+                "drone_model": DEFAULT_DRONES,
+                "initial_xyzs": INIT_XYZS,
+                "initial_rpys": INIT_RPYS,
+                "freq": DEFAULT_SIMULATION_FREQ_HZ,
+                "aggregate_phy_steps": NUM_PHYSICS_STEPS,
+                "record": True,
+                "ext_dist_mag": None,
+                "flip_freq": None,
+                "gui": True,
+                "output_folder": DEFAULT_OUTPUT_FOLDER,
+            },
+        )
+        
+        for ix, agent in enumerate(load_algo.agents):
+                # w -> weight vector for discounted reward
+                scalarized, discounted_scalarized, reward, discounted_reward = eval_mo(
+                    agent=agent, env=env, w=np.array([1.0, 1.0]), render=True
+                )
+                print(f"Agent #{agent.id}")
+                print(f"Scalarized: {scalarized}")
+                print(f"Discounted scalarized: {discounted_scalarized}")
+                print(f"Vectorial: {reward}")
+                print(f"Discounted vectorial: {discounted_reward}")
+                print("-----")
+
+
+        ### eval conditioned reward        
+
+        # def scalarization(reward: np.ndarray):
+        #         return np.linalg.norm(reward * [1, 0.5])
+
+        # for a in algo.archive.individuals:
+        #         print(eval_mo_reward_conditioned(a, env=env, scalarization=scalarization))
+
+        ###
+
+        ### individual policy predictions
+
+        # # (weights - agent) pairs
+        # # number of agents = pop_size param
+        # for a in load_algo.agents:
+        #     print(a)
+        #     print(a.weights)
+        #     # mo_ppo network
+        #     # print(a.networks)
+        #     # predict critic: networks.critic()
+        #     print(a.networks.get_value(th.zeros(size=(1, env.observation_space.shape[0]))))
+        #     # predict actor: networks.actor_mean()
+        #     print(a.networks.get_action_and_value(th.zeros(size=(1, env.observation_space.shape[0]))))
+        #     print("-----")
+
+        ###
 
 
