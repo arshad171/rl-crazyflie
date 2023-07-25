@@ -10,7 +10,8 @@ class MOBalanceAviary(BalanceAviary, EzPickle):
     def __init__(self, **kwargs):
         # discard the attr
         if kwargs.get("render_mode"):
-            kwargs.pop("render_mode")
+            self.metadata["render_modes"] = [kwargs.pop("render_mode")]
+            # kwargs.pop("render_mode")
 
         super().__init__(**kwargs)
         EzPickle.__init__(self, **kwargs)
@@ -22,6 +23,7 @@ class MOBalanceAviary(BalanceAviary, EzPickle):
         # (required for mo-gymnasium)
         self.observation_space = gymnasium.spaces.Box(low=self.observation_space.low, high=self.observation_space.high, shape=self.observation_space.shape)
         self.action_space = gymnasium.spaces.Box(low=self.action_space.low, high=self.action_space.high, shape=self.action_space.shape)
+
 
     def step(self, action):
         observation, reward, done, info = super().step(action)
