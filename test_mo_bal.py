@@ -1,4 +1,6 @@
 import os
+import json
+
 import dill
 import numpy as np
 import torch as th
@@ -59,11 +61,11 @@ TEST_EXT_DIST_STEPS = 3
 FLIP_FREQ = 20
 
 # hyperparams for training
-NUM_EPISODES = 1e6
+NUM_EPISODES = 1e7
 NUM_ENVS = 4 # 4
 POP_SIZE = 6 # 6
-WARMUP_ITERATIONS = 10 # 80
-EVOLUTIONARY_ITERATIONS = 5 # 20
+WARMUP_ITERATIONS = 80 # 80
+EVOLUTIONARY_ITERATIONS = 20 # 20
 # NET_ARCH = [50, 100, 500, 100, 50] # [64, 64]
 TRAIN_EXT_DIST = np.array(
     [
@@ -79,12 +81,12 @@ TRAIN_EXT_DIST = np.array(
 
 if __name__ == "__main__":
     os.makedirs(DEFAULT_OUTPUT_FOLDER, exist_ok=True)
-    if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
 
+    if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         env_id = "mo-balance-aviary-v0"
         ref_point = np.array([-1.0, -1.0])
 
-        env = mo_gym.make(
+        eval_env = mo_gym.make(
         env_id,
             **{
                 "drone_model": DEFAULT_DRONES,
@@ -116,18 +118,17 @@ if __name__ == "__main__":
             total_timesteps=int(NUM_EPISODES),
             ref_point=ref_point,
             known_pareto_front=None,
-            eval_env=env,
+            eval_env=eval_env,
         )
 
-        dill.dump(env, open(ENV_PATH, "wb"))
+        dill.dump(eval_env, open(ENV_PATH, "wb"))
         dill.dump(algo, open(MODEL_PATH, "wb"))
-
 
     if MODE == Modes.TEST or MODE == Modes.TRAIN_TEST:
         load_env = dill.load(open(ENV_PATH, "rb"))
         load_algo = dill.load(open(MODEL_PATH, "rb"))
 
-        env = mo_gym.make(
+        eval_env = mo_gym.make(
             env_id,
             **{
                 "drone_model": DEFAULT_DRONES,
@@ -142,19 +143,30 @@ if __name__ == "__main__":
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
             },
         )
-        
-        for ix, agent in enumerate(load_algo.agents):
-                # w -> weight vector for discounted reward
-                scalarized, discounted_scalarized, reward, discounted_reward = eval_mo(
-                    agent=agent, env=env, w=np.array([1.0, 1.0]), render=True
-                )
-                print(f"Agent #{agent.id}")
-                print(f"Scalarized: {scalarized}")
-                print(f"Discounted scalarized: {discounted_scalarized}")
-                print(f"Vectorial: {reward}")
-                print(f"Discounted vectorial: {discounted_reward}")
-                print("-----")
 
+        metrics = []
+        for ix, agent in enumerate(load_algo.agents):
+            eval_env.reset()
+            # w -> weight vector for discounted reward
+            scalarized, discounted_scalarized, reward, discounted_reward = eval_mo(
+                agent=agent, env=eval_env, w=np.array([1.0, 1.0]), render=True
+            )
+            metrics.append({
+                "id": agent.id,
+                "weights": agent.weights.tolist(),
+                "scalarized_rew": float(scalarized),
+                "discounted_scalarized_rew":float(discounted_scalarized),
+                "vector_rew": reward.tolist(),
+                "discounted_vector_rew": discounted_reward.tolist(),
+            })
+            print(f"Agent #{agent.id}")
+            print(f"Scalarized: {scalarized}")
+            print(f"Discounted scalarized: {discounted_scalarized}")
+            print(f"Vectorial: {reward}")
+            print(f"Discounted vectorial: {discounted_reward}")
+            print("-----")
+
+        json.dump(metrics, open(os.path.join(DEFAULT_OUTPUT_FOLDER, "metrics.json"), "w"), indent=4)
 
         ### eval conditioned reward        
 
