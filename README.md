@@ -31,9 +31,10 @@
 
 1. Install `gym-pybullet-drones` fork from here [arshad171/gym-pybullet-drones:rl-enhancements](https://github.com/arshad171/gym-pybullet-drones). The `rl-enhancements` branch has some nifty enhancements for experiments and multi-objective RL.
 It is ideal to install the package in "editable" mode.
-2. No need to explicitely install `stable-baselines3`, it should be pulled as a dep by `gym-pybullet-drones`.
-3. `pip install "mo-gymnasium[all]"` to install multi-objective gymnasium. [Farama-Foundation/MO-Gymnasium](https://github.com/Farama-Foundation/MO-Gymnasium.git).
-4. Install the multi-objective version of stable_baselines from here: [LucasAlegre/morl-baselines](https://github.com/LucasAlegre/morl-baselines.git).
+1. No need to explicitely install `stable-baselines3`, it should be pulled as a dep by `gym-pybullet-drones`.
+1. Install `sb3-contrib` for the LSTM version of PPO, `pip install sb3-contrib`.
+1. `pip install "mo-gymnasium[all]"` to install multi-objective gymnasium. [Farama-Foundation/MO-Gymnasium](https://github.com/Farama-Foundation/MO-Gymnasium.git).
+1. Install the multi-objective version of stable_baselines from here: [LucasAlegre/morl-baselines](https://github.com/LucasAlegre/morl-baselines.git).
 ## URDF
 
 Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to `gym-pybullet-drones/gym_pybullet_drones/assets/` so gym can access it.
