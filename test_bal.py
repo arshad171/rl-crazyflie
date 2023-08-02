@@ -22,12 +22,15 @@ MODE = "test"
 # DEFAULT_GUI = False
 DEFAULT_GUI = True
 DEFAULT_RECORD_VIDEO = False
-DEFAULT_OUTPUT_FOLDER = "./results"
-MODEL_PATH = "./results/model"
-ENV_PATH = "./results/env"
-LOGS_PATH = "./results/logs"
-TB_LOGS_PATH = "./results/logs"
-PLT_LOGS_PATH = "./results/plt"
+
+DIR = "results-bal-works"
+
+DEFAULT_OUTPUT_FOLDER = f"./{DIR}"
+MODEL_PATH = f"./{DIR}/model"
+ENV_PATH = f"./{DIR}/env"
+LOGS_PATH = f"./{DIR}/logs"
+TB_LOGS_PATH = f"./{DIR}/logs"
+PLT_LOGS_PATH = f"./{DIR}/plt"
 
 DEFAULT_DRONES = DroneModel("cf2x")
 DEFAULT_NUM_DRONES = 1
@@ -63,6 +66,7 @@ def main():
             "record": DEFAULT_RECORD_VIDEO,
             "ext_dist_mag": None,
             "flip_freq": None,
+            "output_folder": DEFAULT_OUTPUT_FOLDER,
         },
     )
     balance_env.reset()
