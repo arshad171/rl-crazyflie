@@ -22,6 +22,7 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
                  eval_reward=False,
+                 output_folder="results",
                  ):
         """Initialization of a single agent RL environment.
 
@@ -70,7 +71,8 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
                          gui=gui,
                          record=record,
                          obs=obs,
-                         act=act
+                         act=act,
+                         output_folder=output_folder,
                          )
         # hover
         self.TARGET_POSITION = np.array([0, 0, 1], dtype=np.float32)
@@ -129,7 +131,18 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
             Dummy value.
 
         """
-        return {"answer": 43} #### Calculated by the Deep Thought supercomputer in 7.5M years
+        state = self._getDroneStateVector(0)
+        error = self._getLastError()
+
+        rewards = {
+            "nav_rew": 0.0,
+            "err_rew": 0.0,
+        }
+        rewards["nav_rew"] = -1 * np.linalg.norm(self.TARGET_POSITION - state[0:3]) ** 2
+        if not self.eval_reward:
+            rewards["err_rew"] = -1 * np.linalg.norm(error) ** 2
+        
+        return rewards
 
     ################################################################################
     

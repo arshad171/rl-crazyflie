@@ -21,3 +21,9 @@ register(
     id="navigation-aviary-err-v0",
     entry_point="rl_crazyflie.envs.NavigationAviaryErr:NavigationAviaryErr",
 )
+
+register_gym(
+    id="mo-navigation-aviary-err-v0",
+    entry_point="rl_crazyflie.envs.MONavigationAviaryErr:MONavigationAviaryErr",
+    max_episode_steps=1000,
+)
