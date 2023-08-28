@@ -61,12 +61,12 @@ TEST_EXT_DIST_STEPS = 3
 FLIP_FREQ = 20
 
 # hyperparams for training
-NUM_EPISODES = 1e7
+NUM_EPISODES = 2e6
 NUM_ENVS = 4 # 4
 POP_SIZE = 6 # 6
 WARMUP_ITERATIONS = 80 # 80
 EVOLUTIONARY_ITERATIONS = 20 # 20
-# NET_ARCH = [50, 100, 500, 100, 50] # [64, 64]
+NET_ARCH = [64, 64, 64] # [64, 64]
 TRAIN_EXT_DIST = np.array(
     [
         [0.0, 0.0, 0.0],
