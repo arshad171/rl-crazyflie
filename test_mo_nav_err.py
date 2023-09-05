@@ -17,6 +17,7 @@ from morl_baselines.common.utils import make_gif
 
 from rl_crazyflie.envs.MONavigationAviaryErr import MONavigationAviaryErr
 from rl_crazyflie.utils.constants import Modes
+from rl_crazyflie.utils.numpy_encoder import NumpyEncoder
 
 
 
@@ -44,19 +45,19 @@ DEFAULT_SIMULATION_FREQ_HZ = 50
 DEFAULT_DURATION_SEC = 2
 DEFAULT_CONTROL_FREQ_HZ = 48
 
-INIT_XYZS = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
+INIT_XYZS = np.array([[1.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 INIT_RPYS = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 NUM_PHYSICS_STEPS = 1
 
 PERIOD = 10
 
 # "train" / "test"
-MODE = Modes.TRAIN_TEST
+MODE = Modes.TEST
 
 NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
-TEST_EXT_DIST_STEPS = 3
+TEST_EXT_DIST_STEPS = 1
 
 FLIP_FREQ = 20
 
@@ -66,7 +67,7 @@ NUM_ENVS = 4 # 4
 POP_SIZE = 6 # 6
 WARMUP_ITERATIONS = 40 # 80
 EVOLUTIONARY_ITERATIONS = 10 # 20
-NET_ARCH = [64, 100, 500, 100, 64] # [64, 64]
+NET_ARCH = [64, 64, 64] # [64, 64]
 TRAIN_EXT_DIST = np.array(
     [
         [0.0, 0.0, 0.0],
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     env_id = "mo-navigation-aviary-err-v0"
 
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
-        ref_point = np.array([0.0, 0.0])
+        ref_point = np.array([-100.0, -100.0])
 
         eval_env = mo_gym.make(
         env_id,
@@ -107,19 +108,22 @@ if __name__ == "__main__":
         algo = PGMORL(
             env_id=env_id,
             origin=ref_point,
+            gamma=0.99,
             project_name="mo-nav-err",
-            num_envs=NUM_ENVS,
-            pop_size=POP_SIZE,
-            warmup_iterations=WARMUP_ITERATIONS,
-            evolutionary_iterations=EVOLUTIONARY_ITERATIONS,
+            log=True,
+            seed=0,
+            # num_envs=NUM_ENVS,
+            # pop_size=POP_SIZE,
+            # warmup_iterations=WARMUP_ITERATIONS,
+            # evolutionary_iterations=EVOLUTIONARY_ITERATIONS,
             net_arch=NET_ARCH
         )
 
         pf = algo.train(
             total_timesteps=int(NUM_EPISODES),
+            eval_env=eval_env,
             ref_point=ref_point,
             known_pareto_front=None,
-            eval_env=eval_env,
         )
 
         dill.dump(eval_env, open(ENV_PATH, "wb"))
@@ -152,34 +156,36 @@ if __name__ == "__main__":
 
         for dir in ext_dists:
             for i in range(2 * TEST_EXT_DIST_STEPS):
-                load_env = dill.load(open(ENV_PATH, "rb"))
+                # load_env = dill.load(open(ENV_PATH, "rb"))
                 load_algo = dill.load(open(MODEL_PATH, "rb"))
 
                 dist = ext_dists[dir][i, :]
 
-                eval_env = mo_gym.make(
-                    env_id,
-                    **{
-                        "drone_model": DEFAULT_DRONES,
-                        "initial_xyzs": INIT_XYZS,
-                        "initial_rpys": INIT_RPYS,
-                        "freq": DEFAULT_SIMULATION_FREQ_HZ,
-                        "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-                        "record": True,
-                        "ext_dist_mag": dist,
-                        "flip_freq": -1,
-                        "eval_reward": True,
-                        "gui": True,
-                        "output_folder": DEFAULT_OUTPUT_FOLDER,
-                    },
-                )
-
                 metrics = []
                 for ix, agent in enumerate(load_algo.agents):
+                    eval_env = dill.load(open(ENV_PATH, "rb"))
+
+                    # eval_env = mo_gym.make(
+                    #     env_id,
+                    #     **{
+                    #         "drone_model": DEFAULT_DRONES,
+                    #         "initial_xyzs": INIT_XYZS,
+                    #         "initial_rpys": INIT_RPYS,
+                    #         "freq": DEFAULT_SIMULATION_FREQ_HZ,
+                    #         "aggregate_phy_steps": NUM_PHYSICS_STEPS,
+                    #         "record": True,
+                    #         "ext_dist_mag": dist,
+                    #         "flip_freq": -1,
+                    #         "eval_reward": True,
+                    #         "gui": False,
+                    #         "output_folder": DEFAULT_OUTPUT_FOLDER,
+                    #     },
+                    # )
+
                     eval_env.reset()
                     # w -> weight vector for discounted reward
                     scalarized, discounted_scalarized, reward, discounted_reward = eval_mo(
-                        agent=agent, env=eval_env, w=np.array([1.0, 1.0]), render=True
+                        agent=agent, env=eval_env, w=np.array([1.0, 1.0]), render=False
                     )
                     metrics.append({
                         "id": agent.id,
@@ -192,13 +198,15 @@ if __name__ == "__main__":
                         "discounted_vector_rew": discounted_reward.tolist(),
                     })
                     print(f"Agent #{agent.id}")
+                    print(f"Agent weights: {agent.weights}")
                     print(f"Scalarized: {scalarized}")
                     print(f"Discounted scalarized: {discounted_scalarized}")
                     print(f"Vectorial: {reward}")
                     print(f"Discounted vectorial: {discounted_reward}")
                     print("-----")
 
-        json.dump(metrics, open(os.path.join(DEFAULT_OUTPUT_FOLDER, "metrics.json"), "w"), indent=4)
+        json.dump(metrics, open(os.path.join(DEFAULT_OUTPUT_FOLDER, "metrics.json"), "w"), indent=4, cls=NumpyEncoder)
+        print("***** dumped results")
 
         ### eval conditioned reward        
 
