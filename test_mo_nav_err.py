@@ -12,6 +12,10 @@ from gym_pybullet_drones.utils.enums import DroneModel, Physics
 
 from morl_baselines.common.evaluation import eval_mo, eval_mo_reward_conditioned
 from morl_baselines.multi_policy.pgmorl.pgmorl import PGMORL
+from morl_baselines.multi_policy.gpi_pd.gpi_pd_continuous_action import (
+    GPILSContinuousAction,
+    GPIPDContinuousAction,
+)
 from morl_baselines.single_policy.ser.mo_ppo import make_env
 from morl_baselines.common.utils import make_gif
 
@@ -105,10 +109,23 @@ if __name__ == "__main__":
         )
 
         # number of agents = pop_size (population size) param, (weights - agent) pairs
-        algo = PGMORL(
-            env_id=env_id,
-            origin=ref_point,
-            gamma=0.99,
+        # algo = PGMORL(
+        #     env_id=env_id,
+        #     origin=ref_point,
+        #     gamma=0.99,
+        #     project_name="mo-nav-err",
+        #     log=True,
+        #     seed=0,
+        #     # num_envs=NUM_ENVS,
+        #     # pop_size=POP_SIZE,
+        #     # warmup_iterations=WARMUP_ITERATIONS,
+        #     # evolutionary_iterations=EVOLUTIONARY_ITERATIONS,
+        #     net_arch=NET_ARCH
+        # )
+        algo = GPILSContinuousAction(
+            env=eval_env,
+            # origin=ref_point,
+            # gamma=0.99,
             project_name="mo-nav-err",
             log=True,
             seed=0,
