@@ -35,6 +35,7 @@ It is ideal to install the package in "editable" mode.
 1. Install `sb3-contrib` for the LSTM version of PPO, `pip install sb3-contrib`.
 1. `pip install "mo-gymnasium[all]"` to install multi-objective gymnasium. [Farama-Foundation/MO-Gymnasium](https://github.com/Farama-Foundation/MO-Gymnasium.git).
 1. Install the multi-objective version of stable_baselines from here: [LucasAlegre/morl-baselines](https://github.com/LucasAlegre/morl-baselines.git).
+1. Install `cdd` for MORL-baselines from here [daltonserey/cdd](https://github.com/slzhang-git/cdd-error-free).
 ## URDF
 
 Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to `gym-pybullet-drones/gym_pybullet_drones/assets/` so gym can access it.
