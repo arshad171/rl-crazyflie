@@ -133,7 +133,7 @@ if __name__ == "__main__":
             # pop_size=POP_SIZE,
             # warmup_iterations=WARMUP_ITERATIONS,
             # evolutionary_iterations=EVOLUTIONARY_ITERATIONS,
-            net_arch=NET_ARCH
+            # net_arch=NET_ARCH
         )
 
         pf = algo.train(
