@@ -107,6 +107,7 @@ def run(dist, dir=None):
                 "record": DEFAULT_RECORD_VIDEO,
                 "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
+                "eval_reward": True,
             },
         )
 
@@ -201,20 +202,25 @@ def run(dist, dir=None):
         for i in range(
             0, int(DEFAULT_DURATION_SEC * nav_env.SIM_FREQ), NUM_PHYSICS_STEPS
         ):
-
-            coordinates.append({
+            log = {
                 "x": next_obs[0],
                 "y": next_obs[1],
                 "z": next_obs[2],
                 "roll": next_obs[3],
                 "pitch": next_obs[4],
                 "yaw": next_obs[5],
-            })
+                "action_mag": None,
+            }
 
             action, _ = model.predict(next_obs)
             next_obs, reward, done, info = nav_env.step(action)
             distance_travelled += np.linalg.norm(next_obs[:3] - prev_state)
             prev_state = next_obs[:3]
+
+            log["action_mag"] = np.linalg.norm(action[0:3])
+
+            coordinates.append(log)
+
             # print(action)
 
             # logger.log(
