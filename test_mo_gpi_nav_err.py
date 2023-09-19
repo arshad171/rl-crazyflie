@@ -84,12 +84,12 @@ TRAIN_EXT_DIST = np.array(
     ]
 )
 
-INIT_WEIGHT = np.ndarray([1.0, 0.0])
 WEIGHT_SUPPORTS = [
-        np.ndarray([0.0, 1.0]),
-        np.ndarray([0.75, 0.25]),
-        np.ndarray([0.5, 0.5]),
-        np.ndarray([0.25, 0.75]),
+        np.array([1.0, 0.0]),
+        np.array([0.0, 1.0]),
+        np.array([0.75, 0.25]),
+        np.array([0.25, 0.75]),
+        np.array([0.5, 0.5]),
     ]
 
 if __name__ == "__main__":
