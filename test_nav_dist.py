@@ -49,7 +49,7 @@ PLT_LOGS_PATH = f"./{DIR}/plt/it"
 
 # define defaults
 VIEW = False
-DEFAULT_GUI = True
+DEFAULT_GUI = False
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OUTPUT_FOLDER = f"./{DIR}/rec"
 
