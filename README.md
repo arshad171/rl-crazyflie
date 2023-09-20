@@ -29,6 +29,7 @@
 
 ## Requirements
 
+### Single-objective RL
 1. Install `gym-pybullet-drones` fork from here [arshad171/gym-pybullet-drones:rl-enhancements](https://github.com/arshad171/gym-pybullet-drones). The `rl-enhancements` branch has some nifty enhancements for experiments and multi-objective RL.
 It is ideal to install the package in "editable" mode.
 The installation is broken with latest updates of `pip`, `setuptools` and `wheel`. Install these specific versions (recommended by gym-pybullet-drones):
@@ -37,8 +38,12 @@ pip install --upgrade pip==23.0.1
 pip install wheel==0.38.4 --upgrade
 pip install setuptools==66 --upgrade
 ```
-1. No need to explicitely install `stable-baselines3`, it should be pulled as a dep by `gym-pybullet-drones`.
-1. Install `sb3-contrib` for the LSTM version of PPO, `pip install sb3-contrib`.
+2. No need to explicitely install `stable-baselines3`, it should be pulled as a dep by `gym-pybullet-drones`.
+
+3. Install `sb3-contrib` for the LSTM version of PPO, `pip install sb3-contrib`. Ignore `stable-baselines3` version conflict.
+
+### Multi-objective RL
+1. Install `gym-pybullet-drones` (above).
 1. `pip install "mo-gymnasium[all]"` to install multi-objective gymnasium. [Farama-Foundation/MO-Gymnasium](https://github.com/Farama-Foundation/MO-Gymnasium.git).
 1. Install the multi-objective version of stable_baselines from here: [LucasAlegre/morl-baselines](https://github.com/LucasAlegre/morl-baselines.git).
 1. Install `pylibcdd` for MORL-baselines from here [cdd](https://pycddlib.readthedocs.io/en/latest/quickstart.html#installation). The package requires dev tools, check the link for more infomation.
