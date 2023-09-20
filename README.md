@@ -40,7 +40,7 @@ pip install setuptools==66 --upgrade
 ```
 2. No need to explicitely install `stable-baselines3`, it should be pulled as a dep by `gym-pybullet-drones`.
 
-3. Install `sb3-contrib` for the LSTM version of PPO, `pip install sb3-contrib`. Ignore `stable-baselines3` version conflict.
+3. Install `sb3-contrib, shimmy` for the LSTM version of PPO, `pip install sb3-contrib shimmy`. Ignore `stable-baselines3` version conflict.
 
 ### Multi-objective RL
 1. Install `gym-pybullet-drones` (above).
