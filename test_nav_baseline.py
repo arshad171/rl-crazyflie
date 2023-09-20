@@ -79,7 +79,7 @@ TEST_EXT_DIST_STEPS = 3
 FLIP_FREQ = None
 
 # hyperparams for training
-NUM_EPISODES = 1
+NUM_EPISODES = 1e6
 ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
 CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
 TRAIN_EXT_DIST = np.array(
