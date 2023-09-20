@@ -1,6 +1,7 @@
 ###
-# lstm, dist, no err
+# dist, error
 ###
+import copy
 import sys
 
 sys.path.append("./src")
@@ -21,7 +22,6 @@ from gym_pybullet_drones.utils.enums import DroneModel, Physics
 from gym_pybullet_drones.utils.utils import sync
 
 # from gym_pybullet_drones.utils.Logger import Logger
-from sb3_contrib import RecurrentPPO
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.noise import NormalActionNoise
@@ -32,13 +32,13 @@ from stable_baselines3.common.monitor import Monitor
 
 from gym.envs.registration import register
 
-from rl_crazyflie.envs.NavigationAviary import NavigationAviary
+from rl_crazyflie.envs.NavigationAviaryErr import NavigationAviaryErr
 from rl_crazyflie.utils.Logger import Logger
 from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "nav-results4-lstm"
+DIR = "nav-results3-dist-err"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -72,7 +72,7 @@ PERIOD = 10
 # "train" / "test"
 MODE = Modes.TRAIN_TEST
 
-NUM_EVAL_EPISODES = 1e6
+NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 3
@@ -80,7 +80,7 @@ TEST_EXT_DIST_STEPS = 3
 FLIP_FREQ = 20
 
 # hyperparams for training
-NUM_EPISODES = 1
+NUM_EPISODES = 1e6
 ACTOR_NET_ARCH = [50, 100, 500, 100, 50]
 CRITIC_NET_ARCH = [50, 100, 500, 100, 50]
 TRAIN_EXT_DIST = np.array(
@@ -100,7 +100,7 @@ def run(dist, dir=None):
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         global FLIP_FREQ
         nav_env = gym.make(
-            "navigation-aviary-v0",
+            "navigation-aviary-err-v0",
             **{
                 "drone_model": DEFAULT_DRONES,
                 "initial_xyzs": INIT_XYZS_TRAIN,
@@ -120,8 +120,8 @@ def run(dist, dir=None):
         sigma = 0.5 * np.ones(n_actions)
 
         new_logger = configure(LOGS_PATH, ["stdout", "csv", "tensorboard"])
-        model = RecurrentPPO(
-            "MlpLstmPolicy",
+        model = PPO(
+            "MlpPolicy",
             nav_env,
             # policy_kwargs=dict(net_arch=dict(pi=ACTOR_NET_ARCH, qf=CRITIC_NET_ARCH)),
             verbose=0,
@@ -129,9 +129,19 @@ def run(dist, dir=None):
             tensorboard_log=TB_LOGS_PATH,
         )
 
+        # # test
+        # nav_env.reset()
+        # # while True:
+        # for _ in range(100):
+        #     obs, rew, done, info = nav_env.step(np.array([1.0, 1.0, 1.0, -1.0]))
+        #     print("-"*10)
+        #     print(obs)
+        #     print("-"*10)
+        # exit(0)
+
         # # resume training
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
-        # model = RecurrentPPO.load(MODEL_PATH, nav_env)
+        # model = PPO.load(MODEL_PATH, nav_env)
 
         model.set_logger(new_logger)
         model.learn(
@@ -152,22 +162,24 @@ def run(dist, dir=None):
         os.makedirs(PLT_LOGS_PATH, exist_ok=True)
 
         nav_env = gym.make(
-            "navigation-aviary-v0",
+            "navigation-aviary-err-v0",
             **{
                 "drone_model": DEFAULT_DRONES,
                 "initial_xyzs": INIT_XYZS_TEST,
                 "initial_rpys": INIT_RPYS,
                 "freq": DEFAULT_SIMULATION_FREQ_HZ,
                 "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-                "gui": DEFAULT_GUI,
-                "record": DEFAULT_RECORD_VIDEO,
+                "gui": True,
+                "record": True,
                 "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
+                "eval_reward": True,
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
             },
         )
+
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
-        model = RecurrentPPO.load(MODEL_PATH, nav_env)
+        model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
 
         # logger = Logger(
@@ -213,11 +225,15 @@ def run(dist, dir=None):
                 "roll": next_obs[3],
                 "pitch": next_obs[4],
                 "yaw": next_obs[5],
+                # "err": next_obs[-3:],
+                "state_err": np.linalg.norm(next_obs[-3:]),
                 "action_mag": None,
                 "xe": None,
                 "ye": None,
                 "ze": None,
             }
+
+            # temp_old_state = next_obs
 
             prev_obs = next_obs[:3]
 
@@ -234,7 +250,27 @@ def run(dist, dir=None):
 
             coordinates.append(log)
 
+            # print("*"*10)
+
+            # temp_state = copy.deepcopy(next_obs)
+            # print("state: ", temp_state)
+            # temp_action_ze, _ = model.predict(temp_state, deterministic=True)
+            # temp_state[12:] = 0
+            # temp_action_e, _ = model.predict(temp_state, deterministic=True)
+
+            # print("action_ze: ", 0.05  * temp_action_ze)
+            # print("action_e: ", 0.05 * temp_action_e)
+
+            # print("old state: ", temp_old_state[:3])
+            # print("next state: ", temp_old_state[:3] + 0.05 * temp_action_e)
+            # print("curr state: ", next_obs[:3])
+            # print("error (th): ", next_obs[:3] - (temp_old_state[:3] + 0.05 * temp_action_e))
+            # print("error (state): ", next_obs[12:])
+
+            # print("*"*10)
+
             # print(action)
+
 
             # logger.log(
             #     drone=0,
@@ -249,7 +285,6 @@ def run(dist, dir=None):
             #         ]
             #     ),
             # )
-
 
             # if done:
             #     nav_env.reset()

@@ -1,5 +1,5 @@
 ###
-# lstm, dist, no err
+# Baseline: no dists, no error
 ###
 import sys
 
@@ -21,7 +21,6 @@ from gym_pybullet_drones.utils.enums import DroneModel, Physics
 from gym_pybullet_drones.utils.utils import sync
 
 # from gym_pybullet_drones.utils.Logger import Logger
-from sb3_contrib import RecurrentPPO
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.noise import NormalActionNoise
@@ -38,7 +37,7 @@ from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "nav-results4-lstm"
+DIR = "nav-results1-baseline"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -77,7 +76,7 @@ TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 3
 
-FLIP_FREQ = 20
+FLIP_FREQ = None
 
 # hyperparams for training
 NUM_EPISODES = 1
@@ -109,7 +108,7 @@ def run(dist, dir=None):
                 "aggregate_phy_steps": NUM_PHYSICS_STEPS,
                 "gui": DEFAULT_GUI,
                 "record": DEFAULT_RECORD_VIDEO,
-                "ext_dist_mag": dist,
+                # "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
             },
@@ -120,8 +119,8 @@ def run(dist, dir=None):
         sigma = 0.5 * np.ones(n_actions)
 
         new_logger = configure(LOGS_PATH, ["stdout", "csv", "tensorboard"])
-        model = RecurrentPPO(
-            "MlpLstmPolicy",
+        model = PPO(
+            "MlpPolicy",
             nav_env,
             # policy_kwargs=dict(net_arch=dict(pi=ACTOR_NET_ARCH, qf=CRITIC_NET_ARCH)),
             verbose=0,
@@ -131,7 +130,7 @@ def run(dist, dir=None):
 
         # # resume training
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
-        # model = RecurrentPPO.load(MODEL_PATH, nav_env)
+        # model = PPO.load(MODEL_PATH, nav_env)
 
         model.set_logger(new_logger)
         model.learn(
@@ -159,15 +158,15 @@ def run(dist, dir=None):
                 "initial_rpys": INIT_RPYS,
                 "freq": DEFAULT_SIMULATION_FREQ_HZ,
                 "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-                "gui": DEFAULT_GUI,
-                "record": DEFAULT_RECORD_VIDEO,
+                "gui": True,
+                "record": True,
                 "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
             },
         )
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
-        model = RecurrentPPO.load(MODEL_PATH, nav_env)
+        model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
 
         # logger = Logger(
@@ -210,9 +209,6 @@ def run(dist, dir=None):
                 "x": next_obs[0],
                 "y": next_obs[1],
                 "z": next_obs[2],
-                "roll": next_obs[3],
-                "pitch": next_obs[4],
-                "yaw": next_obs[5],
                 "action_mag": None,
                 "xe": None,
                 "ye": None,

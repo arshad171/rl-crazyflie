@@ -21,6 +21,7 @@ class NavigationAviary(BaseSingleAgentAviary):
                  act: ActionType=ActionType.PID_VEL,
                  ext_dist_mag: np.array = np.array([0, 0, 0]),
                  flip_freq: int = -1,
+                 output_folder: str = "results",
                  ):
         """Initialization of a single agent RL environment.
 
@@ -68,7 +69,8 @@ class NavigationAviary(BaseSingleAgentAviary):
                          gui=gui,
                          record=record,
                          obs=obs,
-                         act=act
+                         act=act,
+                         output_folder=output_folder,
                          )
         # hover
         self.TARGET_POSITION = np.array([0, 0, 1], dtype=np.float32)
