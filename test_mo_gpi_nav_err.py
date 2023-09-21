@@ -25,7 +25,7 @@ from rl_crazyflie.utils.numpy_encoder import NumpyEncoder
 
 
 
-DIR = "results-mo-nav-err"
+DIR = "nav-results-mo-err"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
