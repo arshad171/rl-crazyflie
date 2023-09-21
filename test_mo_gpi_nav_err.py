@@ -224,7 +224,7 @@ if __name__ == "__main__":
                         "vector_rew": reward.tolist(),
                         "discounted_vector_rew": discounted_reward.tolist(),
                     })
-                    print(f"Agent #{agent_weights.ix}")
+                    print(f"Agent #{ix}")
                     print(f"Agent weights: {agent_weights}")
                     print(f"Scalarized: {scalarized}")
                     print(f"Discounted scalarized: {discounted_scalarized}")
