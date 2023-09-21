@@ -1,5 +1,5 @@
 ###
-# lstm, dist, no err
+# lstm, dist, err
 ###
 import sys
 
@@ -72,7 +72,7 @@ PERIOD = 10
 # "train" / "test"
 MODE = Modes.TRAIN_TEST
 
-NUM_EVAL_EPISODES = 1e6
+NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 3
@@ -100,7 +100,7 @@ def run(dist, dir=None):
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         global FLIP_FREQ
         nav_env = gym.make(
-            "navigation-aviary-v0",
+            "navigation-aviary-err-v0",
             **{
                 "drone_model": DEFAULT_DRONES,
                 "initial_xyzs": INIT_XYZS_TRAIN,
@@ -152,7 +152,7 @@ def run(dist, dir=None):
         os.makedirs(PLT_LOGS_PATH, exist_ok=True)
 
         nav_env = gym.make(
-            "navigation-aviary-v0",
+            "navigation-aviary-err-v0",
             **{
                 "drone_model": DEFAULT_DRONES,
                 "initial_xyzs": INIT_XYZS_TEST,
