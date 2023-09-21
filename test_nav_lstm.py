@@ -159,8 +159,8 @@ def run(dist, dir=None):
                 "initial_rpys": INIT_RPYS,
                 "freq": DEFAULT_SIMULATION_FREQ_HZ,
                 "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-                "gui": DEFAULT_GUI,
-                "record": DEFAULT_RECORD_VIDEO,
+                "gui": False,
+                "record": False,
                 "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
@@ -228,9 +228,12 @@ def run(dist, dir=None):
 
             log["action_mag"] = np.linalg.norm(action[0:3])
 
-            log["xe"] = next_obs[0] - (prev_obs[0] + action[0])
-            log["ye"] = next_obs[1] - (prev_obs[1] + action[1])
-            log["ze"] = next_obs[2] - (prev_obs[2] + action[2])
+            action_temp = action
+            action_temp *= 0.05
+
+            log["xe"] = next_obs[0] - (prev_obs[0] + action_temp[0])
+            log["ye"] = next_obs[1] - (prev_obs[1] + action_temp[1])
+            log["ze"] = next_obs[2] - (prev_obs[2] + action_temp[2])
 
             coordinates.append(log)
 
