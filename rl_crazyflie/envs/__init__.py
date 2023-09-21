@@ -22,6 +22,11 @@ register(
     entry_point="rl_crazyflie.envs.NavigationAviaryErr:NavigationAviaryErr",
 )
 
+register(
+    id="navigation-aviary-err-u-v0",
+    entry_point="rl_crazyflie.envs.NavigationAviaryErrU:NavigationAviaryErrU",
+)
+
 register_gym(
     id="mo-navigation-aviary-err-v0",
     entry_point="rl_crazyflie.envs.MONavigationAviaryErr:MONavigationAviaryErr",

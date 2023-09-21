@@ -1,6 +1,8 @@
 ###
-# Baseline: no dists, no error, no vel control
+# dists, no error, no vel control
 ###
+
+import copy
 import sys
 
 sys.path.append("./src")
@@ -32,13 +34,13 @@ from stable_baselines3.common.monitor import Monitor
 
 from gym.envs.registration import register
 
-from rl_crazyflie.envs.NavigationAviary import NavigationAviary
+from rl_crazyflie.envs.NavigationAviaryErr import NavigationAviaryErr
 from rl_crazyflie.utils.Logger import Logger
 from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "nav-results0-baseline"
+DIR = "nav-results2-dist-v0"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -48,7 +50,7 @@ PLT_LOGS_PATH = f"./{DIR}/plt/it"
 
 # define defaults
 VIEW = False
-DEFAULT_GUI = True
+DEFAULT_GUI = False
 DEFAULT_RECORD_VIDEO = False
 DEFAULT_OUTPUT_FOLDER = f"./{DIR}/rec"
 
@@ -77,7 +79,7 @@ TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 3
 
-FLIP_FREQ = None
+FLIP_FREQ = 20
 
 # hyperparams for training
 NUM_EPISODES = 1e6
@@ -109,10 +111,10 @@ def run(dist, dir=None):
                 "aggregate_phy_steps": NUM_PHYSICS_STEPS,
                 "gui": DEFAULT_GUI,
                 "record": DEFAULT_RECORD_VIDEO,
-                # "ext_dist_mag": dist,
-                "act": ActionType.PID,
+                "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
+                "act": ActionType.PID,
             },
         )
 
@@ -129,6 +131,16 @@ def run(dist, dir=None):
             # action_noise=NormalActionNoise(mu, sigma),
             tensorboard_log=TB_LOGS_PATH,
         )
+
+        # # test
+        # nav_env.reset()
+        # # while True:
+        # for _ in range(100):
+        #     obs, rew, done, info = nav_env.step(np.array([1.0, 1.0, 1.0, -1.0]))
+        #     print("-"*10)
+        #     print(obs)
+        #     print("-"*10)
+        # exit(0)
 
         # # resume training
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
@@ -165,8 +177,10 @@ def run(dist, dir=None):
                 "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
+                "act": ActionType.PID,
             },
         )
+
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
         model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
@@ -211,11 +225,16 @@ def run(dist, dir=None):
                 "x": next_obs[0],
                 "y": next_obs[1],
                 "z": next_obs[2],
+                "roll": next_obs[3],
+                "pitch": next_obs[4],
+                "yaw": next_obs[5],
                 "action_mag": None,
                 "xe": None,
                 "ye": None,
                 "ze": None,
             }
+
+            # temp_old_state = next_obs
 
             prev_obs = next_obs[:3]
 
@@ -235,7 +254,27 @@ def run(dist, dir=None):
 
             coordinates.append(log)
 
+            # print("*"*10)
+
+            # temp_state = copy.deepcopy(next_obs)
+            # print("state: ", temp_state)
+            # temp_action_ze, _ = model.predict(temp_state, deterministic=True)
+            # temp_state[12:] = 0
+            # temp_action_e, _ = model.predict(temp_state, deterministic=True)
+
+            # print("action_ze: ", 0.05  * temp_action_ze)
+            # print("action_e: ", 0.05 * temp_action_e)
+
+            # print("old state: ", temp_old_state[:3])
+            # print("next state: ", temp_old_state[:3] + 0.05 * temp_action_e)
+            # print("curr state: ", next_obs[:3])
+            # print("error (th): ", next_obs[:3] - (temp_old_state[:3] + 0.05 * temp_action_e))
+            # print("error (state): ", next_obs[12:])
+
+            # print("*"*10)
+
             # print(action)
+
 
             # logger.log(
             #     drone=0,
@@ -250,7 +289,6 @@ def run(dist, dir=None):
             #         ]
             #     ),
             # )
-
 
             # if done:
             #     nav_env.reset()
