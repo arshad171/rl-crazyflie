@@ -66,7 +66,7 @@ TEST_EXT_DIST_STEPS = 1
 FLIP_FREQ = 20
 
 # hyperparams for training
-NUM_EPISODES = 2e5
+NUM_EPISODES = 3e5
 NUM_ENVS = 4 # 4
 POP_SIZE = 6 # 6
 WARMUP_ITERATIONS = 40 # 80
@@ -86,10 +86,8 @@ TRAIN_EXT_DIST = np.array(
 
 WEIGHT_SUPPORTS = [
         np.array([1.0, 0.0]),
-        np.array([0.0, 1.0]),
-        np.array([0.75, 0.25]),
-        np.array([0.25, 0.75]),
-        np.array([0.5, 0.5]),
+        np.array([1.0, 0.5]),
+        np.array([1.0, 0.25]),
     ]
 
 if __name__ == "__main__":
