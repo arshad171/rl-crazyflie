@@ -59,8 +59,8 @@ DEFAULT_PHYSICS = Physics("pyb")
 DEFAULT_USER_DEBUG_GUI = False
 DEFAULT_AGGREGATE = True
 DEFAULT_OBSTACLES = True
-DEFAULT_SIMULATION_FREQ_HZ = 50
-DEFAULT_DURATION_SEC = 2
+DEFAULT_SIMULATION_FREQ_HZ = 100
+DEFAULT_DURATION_SEC = 5
 DEFAULT_CONTROL_FREQ_HZ = 48
 
 INIT_XYZS_TRAIN = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
@@ -193,6 +193,7 @@ def run(dist, dir=None):
 
 
             next_obs, reward, done, info = nav_env.step(action)
+            nav_env.ctrl.reset()
             distance_travelled += np.linalg.norm(next_obs[:3] - prev_state)
             prev_state = next_obs[:3]
 
