@@ -70,7 +70,7 @@ NUM_PHYSICS_STEPS = 1
 PERIOD = 10
 
 # "train" / "test"
-MODE = Modes.TRAIN_TEST
+MODE = Modes.TEST
 
 NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
@@ -100,7 +100,7 @@ def run(dist, dir=None):
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         global FLIP_FREQ
         nav_env = gym.make(
-            "navigation-aviary-err-v0",
+            "navigation-aviary-v0",
             **{
                 "drone_model": DEFAULT_DRONES,
                 "initial_xyzs": INIT_XYZS_TRAIN,
