@@ -70,7 +70,7 @@ TEST_EXT_DIST_STEPS = 3
 FLIP_FREQ = 20
 
 # hyperparams for training
-NUM_EPISODES = 3e5
+NUM_EPISODES = 1e6
 NUM_ENVS = 4 # 4
 POP_SIZE = 6 # 6
 WARMUP_ITERATIONS = 40 # 80
@@ -90,7 +90,7 @@ TRAIN_EXT_DIST = np.array(
 
 WEIGHT_SUPPORTS = [
         np.array([1.0, 0.0]),
-        np.array([1.0, 0.5]),
+        # np.array([1.0, 0.5]),
         np.array([1.0, 0.25]),
     ]
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     env_id = "mo-navigation-aviary-err-v0"
 
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
-        ref_point = np.array([-100.0, -100.0])
+        ref_point = np.array([-0.0, -0.0])
 
         eval_env = mo_gym.make(
         env_id,
@@ -118,20 +118,6 @@ if __name__ == "__main__":
             },
         )
 
-        # number of agents = pop_size (population size) param, (weights - agent) pairs
-        # algo = PGMORL(
-        #     env_id=env_id,
-        #     origin=ref_point,
-        #     gamma=0.99,
-        #     project_name="mo-nav-err",
-        #     log=True,
-        #     seed=0,
-        #     # num_envs=NUM_ENVS,
-        #     # pop_size=POP_SIZE,
-        #     # warmup_iterations=WARMUP_ITERATIONS,
-        #     # evolutionary_iterations=EVOLUTIONARY_ITERATIONS,
-        #     net_arch=NET_ARCH
-        # )
         algo = GPILSContinuousAction(
             env=eval_env,
             # origin=ref_point,
@@ -143,7 +129,7 @@ if __name__ == "__main__":
             # pop_size=POP_SIZE,
             # warmup_iterations=WARMUP_ITERATIONS,
             # evolutionary_iterations=EVOLUTIONARY_ITERATIONS,
-            # net_arch=NET_ARCH
+            net_arch=NET_ARCH
         )
 
         algo.set_weight_support(WEIGHT_SUPPORTS)
