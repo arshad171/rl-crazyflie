@@ -1,14 +1,17 @@
 import os
 import json
+import time
 
 import dill
 import numpy as np
 import torch as th
 
+import pandas as pd
 import gym
 import mo_gymnasium as mo_gym
 
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
+from gym_pybullet_drones.utils.utils import sync
 
 from morl_baselines.common.evaluation import eval_mo, eval_mo_reward_conditioned
 from morl_baselines.multi_policy.pgmorl.pgmorl import PGMORL
@@ -29,9 +32,9 @@ DIR = "nav-results-mo-err"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
-# LOGS_PATH = f"./{DIR}/logs"
-# TB_LOGS_PATH = f"./{DIR}/logs"
-# PLT_LOGS_PATH = f"./{DIR}/plt/it"
+LOGS_PATH = f"./{DIR}/logs"
+TB_LOGS_PATH = f"./{DIR}/logs"
+PLT_LOGS_PATH = f"./{DIR}/plt/it"
 
 # define defaults
 VIEW = False
@@ -199,11 +202,11 @@ if __name__ == "__main__":
                             "initial_rpys": INIT_RPYS,
                             "freq": DEFAULT_SIMULATION_FREQ_HZ,
                             "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-                            "record": True,
+                            "record": False,
                             "ext_dist_mag": dist,
                             "flip_freq": -1,
                             "eval_reward": True,
-                            "gui": True,
+                            "gui": False,
                             "output_folder": DEFAULT_OUTPUT_FOLDER,
                         },
                     )
@@ -231,8 +234,59 @@ if __name__ == "__main__":
                     print(f"Discounted vectorial: {discounted_reward}")
                     print("-----")
 
-        json.dump(metrics, open(os.path.join(DEFAULT_OUTPUT_FOLDER, "metrics.json"), "w"), indent=4, cls=NumpyEncoder)
-        print("***** dumped results")
+                    coordinates = []
+                    distance_travelled = 0.0
+
+                    # simulate
+                    START = time.time()
+                    for i in range(
+                        0, int(DEFAULT_DURATION_SEC * eval_env.SIM_FREQ), NUM_PHYSICS_STEPS
+                    ):
+                        log = {
+                            "x": next_obs[0],
+                            "y": next_obs[1],
+                            "z": next_obs[2],
+                            # "err": next_obs[-3:],
+                            "err": np.linalg.norm(next_obs[-3:]),
+                            "action_mag": None,
+                            "xe": None,
+                            "ye": None,
+                            "ze": None,
+                        }
+
+                        # temp_old_state = next_obs
+
+                        prev_obs = next_obs[:3]
+
+                        action, _ = load_algo.predict(next_obs, agent_weights)
+                        next_obs, reward, done, info = eval_env.step(action)
+                        distance_travelled += np.linalg.norm(next_obs[:3] - prev_state)
+                        prev_state = next_obs[:3]
+
+                        log["action_mag"] = np.linalg.norm(action[0:3])
+
+                        log["xe"] = next_obs[0] - (prev_obs[0] + action[0])
+                        log["ye"] = next_obs[1] - (prev_obs[1] + action[1])
+                        log["ze"] = next_obs[2] - (prev_obs[2] + action[2])
+
+                        coordinates.append(log)
+
+                        if i % eval_env.SIM_FREQ == 0:
+                            eval_env.render()
+
+                        if DEFAULT_GUI:
+                            sync(i, START, eval_env.TIMESTEP)
+
+                    eval_env.reset()
+                    eval_env.close()
+                    del eval_env
+
+                    df_coordinates = pd.DataFrame(coordinates)
+
+                    df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"{dir}_{np.sum(dist):.3f}.csv"), index=False)
+
+                    json.dump(metrics, open(os.path.join(DEFAULT_OUTPUT_FOLDER, "metrics.json"), "w"), indent=4, cls=NumpyEncoder)
+                    print("***** dumped results")
 
         ### eval conditioned reward        
 
