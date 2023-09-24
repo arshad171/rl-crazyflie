@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
                 metrics = []
                 for ix, agent_weights in enumerate(WEIGHT_SUPPORTS):
-                    os.makedirs(PLT_LOGS_PATH, f"agent_{ix}", exist_ok=True)
+                    os.makedirs(os.path.join(PLT_LOGS_PATH, f"agent_{ix}"), exist_ok=True)
 
                     # eval_env = dill.load(open(ENV_PATH, "rb"))
 
