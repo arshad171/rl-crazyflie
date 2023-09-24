@@ -49,14 +49,15 @@ DEFAULT_SIMULATION_FREQ_HZ = 50
 DEFAULT_DURATION_SEC = 2
 DEFAULT_CONTROL_FREQ_HZ = 48
 
-INIT_XYZS = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
+INIT_XYZS_TRAIN = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
+INIT_XYZS_TEST = np.array([[2.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 INIT_RPYS = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 NUM_PHYSICS_STEPS = 1
 
 PERIOD = 10
 
 # "train" / "test"
-MODE = Modes.TRAIN_TEST
+MODE = Modes.TEST
 
 NUM_EVAL_EPISODES = 1
 TEST_EXT_DIST_X_MAX = 0.1
@@ -102,7 +103,7 @@ if __name__ == "__main__":
         env_id,
             **{
                 "drone_model": DEFAULT_DRONES,
-                "initial_xyzs": INIT_XYZS,
+                "initial_xyzs": INIT_XYZS_TRAIN,
                 "initial_rpys": INIT_RPYS,
                 "freq": DEFAULT_SIMULATION_FREQ_HZ,
                 "aggregate_phy_steps": NUM_PHYSICS_STEPS,
@@ -188,24 +189,24 @@ if __name__ == "__main__":
 
                 metrics = []
                 for ix, agent_weights in enumerate(WEIGHT_SUPPORTS):
-                    eval_env = dill.load(open(ENV_PATH, "rb"))
+                    # eval_env = dill.load(open(ENV_PATH, "rb"))
 
-                    # eval_env = mo_gym.make(
-                    #     env_id,
-                    #     **{
-                    #         "drone_model": DEFAULT_DRONES,
-                    #         "initial_xyzs": INIT_XYZS,
-                    #         "initial_rpys": INIT_RPYS,
-                    #         "freq": DEFAULT_SIMULATION_FREQ_HZ,
-                    #         "aggregate_phy_steps": NUM_PHYSICS_STEPS,
-                    #         "record": True,
-                    #         "ext_dist_mag": dist,
-                    #         "flip_freq": -1,
-                    #         "eval_reward": True,
-                    #         "gui": False,
-                    #         "output_folder": DEFAULT_OUTPUT_FOLDER,
-                    #     },
-                    # )
+                    eval_env = mo_gym.make(
+                        env_id,
+                        **{
+                            "drone_model": DEFAULT_DRONES,
+                            "initial_xyzs": INIT_XYZS_TEST,
+                            "initial_rpys": INIT_RPYS,
+                            "freq": DEFAULT_SIMULATION_FREQ_HZ,
+                            "aggregate_phy_steps": NUM_PHYSICS_STEPS,
+                            "record": True,
+                            "ext_dist_mag": dist,
+                            "flip_freq": -1,
+                            "eval_reward": True,
+                            "gui": True,
+                            "output_folder": DEFAULT_OUTPUT_FOLDER,
+                        },
+                    )
 
                     eval_env.reset()
                     # w -> weight vector for discounted reward
