@@ -75,7 +75,7 @@ NUM_ENVS = 4 # 4
 POP_SIZE = 6 # 6
 WARMUP_ITERATIONS = 40 # 80
 EVOLUTIONARY_ITERATIONS = 10 # 20
-NET_ARCH = [64, 64, 64] # [64, 64]
+NET_ARCH = [256, 256, 256] # [256, 256]
 TRAIN_EXT_DIST = np.array(
     [
         [0.0, 0.0, 0.0],
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     env_id = "mo-navigation-aviary-err-v0"
 
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
-        ref_point = np.array([-0.0, -0.0])
+        ref_point = np.array([-100.0, -100.0])
 
         eval_env = mo_gym.make(
         env_id,
