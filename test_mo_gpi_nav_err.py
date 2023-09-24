@@ -234,6 +234,7 @@ if __name__ == "__main__":
                     print(f"Discounted vectorial: {discounted_reward}")
                     print("-----")
 
+                    next_obs = eval_env.reset()
                     coordinates = []
                     distance_travelled = 0.0
 
