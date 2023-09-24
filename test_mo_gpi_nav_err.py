@@ -237,6 +237,7 @@ if __name__ == "__main__":
                     next_obs, _ = eval_env.reset()
                     coordinates = []
                     distance_travelled = 0.0
+                    prev_state = np.zeros(shape=(3,))
 
                     # simulate
                     START = time.time()
@@ -259,8 +260,8 @@ if __name__ == "__main__":
 
                         prev_obs = next_obs[:3]
 
-                        action, _ = load_algo.predict(next_obs, agent_weights)
-                        next_obs, reward, done, info = eval_env.step(action)
+                        action = load_algo.eval(next_obs, agent_weights)
+                        next_obs, reward, terminated, truncated, info = eval_env.step(action)
                         distance_travelled += np.linalg.norm(next_obs[:3] - prev_state)
                         prev_state = next_obs[:3]
 
