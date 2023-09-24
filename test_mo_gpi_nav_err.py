@@ -287,10 +287,10 @@ if __name__ == "__main__":
 
                     df_coordinates = pd.DataFrame(coordinates)
 
-                    df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"{dir}_{np.sum(dist):.3f}.csv"), index=False)
+                    df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"agent_{ix}", f"{dir}_{np.sum(dist):.3f}.csv"), index=False)
 
-                    json.dump(metrics, open(os.path.join(DEFAULT_OUTPUT_FOLDER, "metrics.json"), "w"), indent=4, cls=NumpyEncoder)
-                    print("***** dumped results")
+                json.dump(metrics, open(os.path.join(DEFAULT_OUTPUT_FOLDER, "metrics.json"), "w"), indent=4, cls=NumpyEncoder)
+                print("***** dumped results")
 
         ### eval conditioned reward        
 
