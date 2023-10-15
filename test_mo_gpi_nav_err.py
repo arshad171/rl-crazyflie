@@ -125,7 +125,7 @@ if __name__ == "__main__":
             project_name="mo-nav-err",
             log=True,
             seed=0,
-            buffer_size=1e6,
+            buffer_size=int(1e6),
             # num_envs=NUM_ENVS,
             # pop_size=POP_SIZE,
             # warmup_iterations=WARMUP_ITERATIONS,
