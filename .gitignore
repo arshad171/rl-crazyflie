@@ -5,7 +5,7 @@ __pycache__
 gym-pybullet-drones
 moral-baselines
 pybullet*
-results*
+*results*
 wandb
 hj-berkely
 optimized_dp
