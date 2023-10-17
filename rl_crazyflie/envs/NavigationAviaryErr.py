@@ -114,6 +114,7 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
         """
         if self.step_counter/self.SIM_FREQ > self.EPISODE_LEN_SEC:
             self._resetLastError()
+            self._resetLastAction()
             return True
         else:
             return False
@@ -241,3 +242,8 @@ class NavigationAviaryErr(BaseSingleAgentAviary):
             print("[WARNING] it", self.step_counter, "in NavigationAviaryErr._clipAndNormalizeState(), clipped xy velocity [{:.2f} {:.2f}]".format(state[10], state[11]))
         if not(clipped_vel_z == np.array(state[12])).all():
             print("[WARNING] it", self.step_counter, "in NavigationAviaryErr._clipAndNormalizeState(), clipped z velocity [{:.2f}]".format(state[12]))
+    
+    # def reset(self):
+    #     self._resetLastAction()
+    #     self._resetLastError()
+    #     return super().reset()
