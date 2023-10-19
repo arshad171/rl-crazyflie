@@ -102,6 +102,22 @@ if __name__ == "__main__":
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         ref_point = np.array([-100.0, -100.0])
 
+        train_env = mo_gym.make(
+        env_id,
+            **{
+                "drone_model": DEFAULT_DRONES,
+                "initial_xyzs": INIT_XYZS_TRAIN,
+                "initial_rpys": INIT_RPYS,
+                "freq": DEFAULT_SIMULATION_FREQ_HZ,
+                "aggregate_phy_steps": NUM_PHYSICS_STEPS,
+                "record": DEFAULT_RECORD_VIDEO,
+                "ext_dist_mag": TRAIN_EXT_DIST,
+                "flip_freq": FLIP_FREQ,
+                "gui": False,
+                "output_folder": DEFAULT_OUTPUT_FOLDER,
+            },
+        )
+
         eval_env = mo_gym.make(
         env_id,
             **{
@@ -119,7 +135,7 @@ if __name__ == "__main__":
         )
 
         algo = GPILSContinuousAction(
-            env=eval_env,
+            env=train_env,
             # origin=ref_point,
             # gamma=0.99,
             project_name="mo-nav-err",
