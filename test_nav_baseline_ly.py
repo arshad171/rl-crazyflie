@@ -1,7 +1,6 @@
 ###
-# dist, error
+# Baseline: no dists, no error
 ###
-import copy
 import sys
 
 sys.path.append("./src")
@@ -32,19 +31,19 @@ from stable_baselines3.common.monitor import Monitor
 
 from gym.envs.registration import register
 
-from rl_crazyflie.envs.NavigationAviaryErr import NavigationAviaryErr
+from rl_crazyflie.envs.NavigationAviary import NavigationAviary
 from rl_crazyflie.utils.Logger import Logger
 from rl_crazyflie.utils.constants import Modes
 
 # from plotter import plot
 
-DIR = "nav-results3-dist-err"
+DIR = "nav-results1-baseline"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
 LOGS_PATH = f"./{DIR}/logs"
 TB_LOGS_PATH = f"./{DIR}/logs"
-PLT_LOGS_PATH = f"./{DIR}/plt/it"
+PLT_LOGS_PATH = f"./{DIR}/plt/ly"
 
 # define defaults
 VIEW = False
@@ -63,7 +62,7 @@ DEFAULT_DURATION_SEC = 2
 DEFAULT_CONTROL_FREQ_HZ = 48
 
 INIT_XYZS_TRAIN = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
-INIT_XYZS_TEST = np.array([[2.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
+INIT_XYZS_TEST = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 INIT_RPYS = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 NUM_PHYSICS_STEPS = 1
 
@@ -77,7 +76,7 @@ TEST_EXT_DIST_X_MAX = 0.1
 TEST_EXT_DIST_XYZ_MAX = 0.05
 TEST_EXT_DIST_STEPS = 3
 
-FLIP_FREQ = 20
+FLIP_FREQ = None
 
 # hyperparams for training
 NUM_EPISODES = 1e6
@@ -96,11 +95,11 @@ TRAIN_EXT_DIST = np.array(
 )
 
 
-def run(dist, dir=None):
+def run(dist, dir=None, inits=None):
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
         global FLIP_FREQ
         nav_env = gym.make(
-            "navigation-aviary-err-v0",
+            "navigation-aviary-v0",
             **{
                 "drone_model": DEFAULT_DRONES,
                 "initial_xyzs": INIT_XYZS_TRAIN,
@@ -109,7 +108,7 @@ def run(dist, dir=None):
                 "aggregate_phy_steps": NUM_PHYSICS_STEPS,
                 "gui": DEFAULT_GUI,
                 "record": DEFAULT_RECORD_VIDEO,
-                "ext_dist_mag": dist,
+                # "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
             },
@@ -128,16 +127,6 @@ def run(dist, dir=None):
             # action_noise=NormalActionNoise(mu, sigma),
             tensorboard_log=TB_LOGS_PATH,
         )
-
-        # # test
-        # nav_env.reset()
-        # # while True:
-        # for _ in range(100):
-        #     obs, rew, done, info = nav_env.step(np.array([1.0, 1.0, 1.0, -1.0]))
-        #     print("-"*10)
-        #     print(obs)
-        #     print("-"*10)
-        # exit(0)
 
         # # resume training
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
@@ -162,7 +151,7 @@ def run(dist, dir=None):
         os.makedirs(PLT_LOGS_PATH, exist_ok=True)
 
         nav_env = gym.make(
-            "navigation-aviary-err-v0",
+            "navigation-aviary-v0",
             **{
                 "drone_model": DEFAULT_DRONES,
                 "initial_xyzs": INIT_XYZS_TEST,
@@ -173,11 +162,9 @@ def run(dist, dir=None):
                 "record": False,
                 "ext_dist_mag": dist,
                 "flip_freq": FLIP_FREQ,
-                "eval_reward": True,
                 "output_folder": DEFAULT_OUTPUT_FOLDER,
             },
         )
-
         # nav_env = pickle.load(open(ENV_PATH, "rb"))
         model = PPO.load(MODEL_PATH, nav_env)
         # nav_env = model.get_env()
@@ -222,19 +209,12 @@ def run(dist, dir=None):
                 "x": next_obs[0],
                 "y": next_obs[1],
                 "z": next_obs[2],
-                "roll": next_obs[3],
-                "pitch": next_obs[4],
-                "yaw": next_obs[5],
-                # "err": next_obs[-3:],
-                "state_err": np.linalg.norm(next_obs[-3:]),
                 "action_mag": None,
                 "xe": None,
                 "ye": None,
                 "ze": None,
                 "reward": None,
             }
-
-            # temp_old_state = next_obs
 
             prev_obs = next_obs[:3]
 
@@ -256,27 +236,7 @@ def run(dist, dir=None):
 
             coordinates.append(log)
 
-            # print("*"*10)
-
-            # temp_state = copy.deepcopy(next_obs)
-            # print("state: ", temp_state)
-            # temp_action_ze, _ = model.predict(temp_state, deterministic=True)
-            # temp_state[12:] = 0
-            # temp_action_e, _ = model.predict(temp_state, deterministic=True)
-
-            # print("action_ze: ", 0.05  * temp_action_ze)
-            # print("action_e: ", 0.05 * temp_action_e)
-
-            # print("old state: ", temp_old_state[:3])
-            # print("next state: ", temp_old_state[:3] + 0.05 * temp_action_e)
-            # print("curr state: ", next_obs[:3])
-            # print("error (th): ", next_obs[:3] - (temp_old_state[:3] + 0.05 * temp_action_e))
-            # print("error (state): ", next_obs[12:])
-
-            # print("*"*10)
-
             # print(action)
-
 
             # logger.log(
             #     drone=0,
@@ -291,6 +251,7 @@ def run(dist, dir=None):
             #         ]
             #     ),
             # )
+
 
             # if done:
             #     nav_env.reset()
@@ -307,7 +268,9 @@ def run(dist, dir=None):
 
         df_coordinates = pd.DataFrame(coordinates)
 
-        df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, f"{dir}_{np.sum(dist):.3f}.csv"), index=False)
+        filename = f"{dir}_{np.sum(dist):.3f}.csv" if not inits else f"{dir}_{np.sum(dist):.3f}_{inits[0]:.3f}_{inits[1]:.3f}.csv"
+        
+        df_coordinates.to_csv(os.path.join(PLT_LOGS_PATH, filename), index=False)
 
         # logger.save_as_csv(comment="test")
         # plot()
@@ -320,25 +283,25 @@ if __name__ == "__main__":
         run(TRAIN_EXT_DIST)
     elif MODE == Modes.TEST or MODE == Modes.TRAIN_TEST:
         ext_dists = {
-            "x": np.vstack(
-                [
-                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS)]),
-                    np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
-                    np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
-                ]
-            ).transpose(),
-            "z": np.vstack(
-                [
-                    np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
-                    np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
-                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS)]),
-                ]
-            ).transpose(),
+        #     "x": np.vstack(
+        #         [
+        #             np.hstack([np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS)]),
+        #             np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
+        #             np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
+        #         ]
+        #     ).transpose(),
+        #     "z": np.vstack(
+        #         [
+        #             np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
+        #             np.hstack([np.zeros(shape=(TEST_EXT_DIST_STEPS,)), np.zeros(shape=(TEST_EXT_DIST_STEPS,))]),
+        #             np.hstack([np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_X_MAX, TEST_EXT_DIST_STEPS)]),
+        #         ]
+        #     ).transpose(),
             "xyz": np.vstack(
                 [
-                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS)]),
-                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS)]),
-                    np.hstack([np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS), -1 * np.linspace(0.0, TEST_EXT_DIST_XYZ_MAX, TEST_EXT_DIST_STEPS)]),
+                    [np.hstack([0.025])],
+                    [np.hstack([0.025])],
+                    [np.hstack([0.025])],
                 ]
             ).transpose(),
         }
@@ -353,11 +316,19 @@ if __name__ == "__main__":
         #         "mean_step_reward",
         #     ]
         # )
+        num_init = 10
+        init_theta = np.linspace(start=0, stop=2 * np.pi, num=num_init)
+        init_x = np.cos(init_theta)
+        init_y = np.sin(init_theta)
+
         for dir in ext_dists:
-            for i in range(2 * TEST_EXT_DIST_STEPS):
-                dist = ext_dists[dir][i, :]
+            for i in range(num_init):
+            # for i in range(2 * TEST_EXT_DIST_STEPS):
+                INIT_XYZS_TEST = INIT_XYZS_TEST = np.array([[init_x[i], init_y[i], 0.0] for _ in range(DEFAULT_NUM_DRONES)])
+                dist = ext_dists[dir][0, :]
 
                 print("*" * 10)
+                print(INIT_XYZS_TEST)
                 print(f"dir: {dir} | dist: {dist}")
                 print("*" * 10)
 
@@ -366,7 +337,7 @@ if __name__ == "__main__":
                     std_eps_reward,
                     mean_step_reward,
                     distance_travelled,
-                ) = run(dist=dist, dir=dir)
+                ) = run(dist=dist, dir=dir, inits=(init_x[i], init_y[i]))
 
                 # ext_dists_res_df = pd.concat([
                 #     ext_dists_res_df,

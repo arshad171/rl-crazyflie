@@ -213,6 +213,7 @@ def run(dist, dir=None):
                 "xe": None,
                 "ye": None,
                 "ze": None,
+                "reward": None,
             }
 
             prev_obs = next_obs[:3]
@@ -230,6 +231,8 @@ def run(dist, dir=None):
             log["xe"] = next_obs[0] - (prev_obs[0] + action_temp[0])
             log["ye"] = next_obs[1] - (prev_obs[1] + action_temp[1])
             log["ze"] = next_obs[2] - (prev_obs[2] + action_temp[2])
+
+            log["reward"] = reward
 
             coordinates.append(log)
 
