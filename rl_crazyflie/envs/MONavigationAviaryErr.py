@@ -24,8 +24,8 @@ class MONavigationAviaryErr(NavigationAviaryErr, EzPickle):
         self.observation_space = gymnasium.spaces.Box(low=self.observation_space.low, high=self.observation_space.high, shape=self.observation_space.shape)
         self.action_space = gymnasium.spaces.Box(low=self.action_space.low, high=self.action_space.high, shape=self.action_space.shape)
 
-        # if not self.eval_reward:
-        #     self.EPISODE_LEN_SEC = 1
+        if not self.eval_reward:
+            self.EPISODE_LEN_SEC = 1
 
 
     def step(self, action):
@@ -36,6 +36,7 @@ class MONavigationAviaryErr(NavigationAviaryErr, EzPickle):
     
     def reset(self, **kwargs):
         self._resetLastError()
+        # self._resetLastAction()
         obs = super().reset()
 
         # obs, info
