@@ -92,3 +92,16 @@ Run `xacro stick.xacro > stick.urdf` to generate the URDF file. Copy the URDF to
 - [x] Steady-state errors.
 
 - [x] Table highlights.
+
+## Demo
+
+- Stick balancing
+
+![ezgif com-video-to-gif](https://github.com/arshad171/rl-crazyflie/assets/37022146/600ac8da-4a68-40d9-9a1e-412cd2cbbda1)
+
+- Navigation improvements
+
+Paper: ArXiv [preprint]()
+
+## Author(s)
+- Arshad Javeed
