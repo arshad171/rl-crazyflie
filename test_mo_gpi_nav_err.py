@@ -28,7 +28,7 @@ from rl_crazyflie.utils.numpy_encoder import NumpyEncoder
 
 
 
-DIR = "nav-results-mo-err"
+DIR = "nav-results-mo-err-2"
 
 MODEL_PATH = f"./{DIR}/model"
 ENV_PATH = f"./{DIR}/env"
@@ -52,8 +52,8 @@ DEFAULT_SIMULATION_FREQ_HZ = 50
 DEFAULT_DURATION_SEC = 2
 DEFAULT_CONTROL_FREQ_HZ = 48
 
-INIT_XYZS_TRAIN = np.array([[0.0, 0.0, 1.0] for _ in range(DEFAULT_NUM_DRONES)])
-INIT_XYZS_TEST = np.array([[2.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
+INIT_XYZS_TRAIN = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
+INIT_XYZS_TEST = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 INIT_RPYS = np.array([[0.0, 0.0, 0.0] for _ in range(DEFAULT_NUM_DRONES)])
 NUM_PHYSICS_STEPS = 1
 
@@ -91,7 +91,7 @@ TRAIN_EXT_DIST = np.array(
 WEIGHT_SUPPORTS = [
         np.array([1.0, 0.0]),
         # np.array([1.0, 0.5]),
-        np.array([1.0, 0.25]),
+        np.array([0.9, 0.10]),
     ]
 
 if __name__ == "__main__":
@@ -141,7 +141,8 @@ if __name__ == "__main__":
             project_name="mo-nav-err",
             log=True,
             seed=0,
-            buffer_size=int(1e6),
+            batch_size=64,
+            # buffer_size=int(1e6),
             # num_envs=NUM_ENVS,
             # pop_size=POP_SIZE,
             # warmup_iterations=WARMUP_ITERATIONS,
