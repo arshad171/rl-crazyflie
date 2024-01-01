@@ -35,7 +35,7 @@ class MONavigationAviaryErr(NavigationAviaryErr, EzPickle):
         return observation, vec_reward, done, done, info
     
     def reset(self, **kwargs):
-        self._resetLastError()
+        # self._resetLastError()
         # self._resetLastAction()
         obs = super().reset()
 
