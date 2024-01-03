@@ -100,7 +100,7 @@ if __name__ == "__main__":
     env_id = "mo-navigation-aviary-err-v0"
 
     if MODE == Modes.TRAIN or MODE == Modes.TRAIN_TEST:
-        ref_point = np.array([-10.0, -10.0])
+        ref_point = np.array([-1.0, -1.0])
 
         train_env = mo_gym.make(
         env_id,
