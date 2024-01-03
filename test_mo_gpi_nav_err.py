@@ -157,7 +157,7 @@ if __name__ == "__main__":
             eval_env=eval_env,
             ref_point=ref_point,
             known_pareto_front=None,
-            timesteps_per_iter=NUM_EPISODES // 10
+            timesteps_per_iter=int(NUM_EPISODES // 10)
         )
 
         dill.dump(eval_env, open(ENV_PATH, "wb"))
